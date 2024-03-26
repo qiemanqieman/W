@@ -1,1 +1,3 @@
 /w/target
+/tmp/*
+!/tmp/return_2.w
