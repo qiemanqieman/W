@@ -22,20 +22,20 @@ Stmt -> VarDecl
       | VarDef
       | Assign
       | pass
+      | return Expr
 
 VarDecl -> Type Identifier
 VarDef -> Type Identifier = Expr
 Assign -> Identifier = Expr
 
-Expr -> Expr + Term
-      | Expr - Term
+Expr -> Term + Expr
+      | Term - Expr
       | Term
 
-Term -> Term * Factor
-      | Term / Factor
+Term -> Factor * Term
+      | Factor / Term
       | Factor
 
 Factor -> ( Expr )
-        | Identifier
-        | Literal
+        | Basic (Integer Float StringLiteral et. al.)
 

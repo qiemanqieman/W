@@ -1,3 +1,6 @@
 /w/target
 /tmp/*
+/external/*
 !/tmp/return_2.w
+/w/build
+/w/log

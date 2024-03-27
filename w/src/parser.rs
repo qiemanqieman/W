@@ -1,7 +1,7 @@
 use crate::lexer::Lexer;
-use crate::tree::Tree;
+use crate::ast::AST;
 use core::panic;
-use std::collections::{HashMap};
+use std::collections::{HashMap, VecDeque};
 use std::vec;
 
 struct Grammar {
@@ -104,258 +104,294 @@ impl Grammar {
 
 pub struct Parser<'a> {
   lexer: Lexer<'a>,
-  current_token: String,
+  current_tokens: VecDeque<String>,
   grammar: Grammar,
 }
 
 impl<'a> Parser<'a> {
   pub fn new(mut lexer: Lexer<'a>) -> Self {
-    let current_token = lexer.next_token();
+    let mut current_tokens = VecDeque::new();
+    current_tokens.push_back(lexer.next_token());
     let grammar = Grammar::new();
-    Parser { lexer, current_token, grammar }
+    Parser { lexer, current_tokens: current_tokens, grammar }
   }
 
   fn consume_token(&mut self) {
-    self.current_token = self.lexer.next_token();
+    if self.current_tokens.len() <= 1 {
+    self.prefetch_token();
+    }
+    self.current_tokens.pop_front();
   }
 
-  /// 自顶向下语法分析； 表格驱动语法分析
-  pub fn parse(&mut self) -> Tree {
+  fn prefetch_token(&mut self) {
+    let token = self.lexer.next_token();
+    self.current_tokens.push_back(token);
+  }
+
+  /// 自顶向下递归下降语法分析； 表格驱动语法分析
+  pub fn parse(&mut self) -> AST {
     let ast = self.parse_pg();
     ast
   }
 
-  fn parse_pg(&mut self) -> Tree {
+  fn parse_pg(&mut self) -> AST {
     println!("pg->Fn FnList");
     let f = self.parse_fn();
     let fn_list = self.parse_fn_list();
-    Tree::new("Pg".to_string(), vec![f, fn_list])
+    AST::new("Pg".to_string(), vec![f, fn_list])
   }
 
-  fn parse_fn(&mut self) -> Tree {
+  fn parse_fn(&mut self) -> AST {
     println!("Fn->Type Identifier Param FnBody FnList");
     let ty = self.parse_type();
     let id = self.parse_identifier();
     let pa = self.parse_param();
     let fb = self.parse_fn_body();
-    Tree::new("Fn".to_string(), vec![ty, id, pa, fb])
+    AST::new("Fn".to_string(), vec![ty, id, pa, fb])
   }
 
-  fn parse_fn_list(&mut self) -> Tree {
-    if self.current_token == "".to_string() {
+  fn parse_fn_list(&mut self) -> AST {
+    if self.current_tokens[0] == "".to_string() {
       println!("FnList->ε");
-      return Tree::new("FnList->ε".to_string(), vec![]);
+      return AST::new("FnList->ε".to_string(), vec![]);
     }
     println!("FnList->Fn FnList");
     let f = self.parse_fn();
     let fl = self.parse_fn_list();
-    Tree::new("FnList".to_string(), vec![f, fl])
+    AST::new("FnList".to_string(), vec![f, fl])
   }
 
-  fn parse_type(&mut self) -> Tree {
-    if self.current_token != "".to_string() {
-      println!("Type->{}", self.current_token);
-      let token = self.current_token.clone();
+  fn parse_type(&mut self) -> AST {
+    if self.current_tokens[0] != "".to_string() {
+      println!("Type->{}", self.current_tokens[0]);
+      let token = self.current_tokens[0].clone();
       self.consume_token();
-      return Tree::new("Type->".to_string()+token.as_str(), vec![]);
+      return AST::new("Type->".to_string()+token.as_str(), vec![]);
     }
     else {
-      panic!("parse_type error, expected Type, but got {}", self.current_token);
+      panic!("parse_type error, expected Type, but got {}", self.current_tokens[0]);
     }
   }
 
-  fn parse_identifier(&mut self) -> Tree {
-    if self.current_token != "".to_string() {
-      println!("Identifier->{}", self.current_token);
-      let token = self.current_token.clone();
+  fn parse_identifier(&mut self) -> AST {
+    if self.current_tokens[0] != "".to_string() {
+      println!("Identifier->{}", self.current_tokens[0]);
+      let token = self.current_tokens[0].clone();
       self.consume_token();
-      return Tree::new("Identifier->".to_string()+token.as_str(), vec![]);
+      return AST::new("Identifier->".to_string()+token.as_str(), vec![]);
     }
     else {
-      panic!("parse_identifier error, expected Identifier, but got {}", self.current_token);
+      panic!("parse_identifier error, expected Identifier, but got {}", self.current_tokens[0]);
     }
   }
 
-  fn parse_param(&mut self) -> Tree {
+  fn parse_param(&mut self) -> AST {
     println!("Param->(ParamList)");
-    let pl : Tree;
-    if self.current_token == "(" {
+    let pl : AST;
+    if self.current_tokens[0] == "(" {
       self.consume_token();
       pl = self.parse_param_list();
-      if self.current_token == ")" {
+      if self.current_tokens[0] == ")" {
         self.consume_token();
       } else{
-        panic!("parse_param error, expected ), but got {}", self.current_token);
+        panic!("parse_param error, expected ), but got {}", self.current_tokens[0]);
       }
     } else {
-      panic!("parse_param error, expected (, but got {}", self.current_token);
+      panic!("parse_param error, expected (, but got {}", self.current_tokens[0]);
     }
-    return Tree::new("Param".to_string(), vec![pl]);
+    return AST::new("Param".to_string(), vec![pl]);
   }
 
-  fn parse_param_list(&mut self) -> Tree {
-    if self.current_token == ")".to_string() {
+  fn parse_param_list(&mut self) -> AST {
+    if self.current_tokens[0] == ")".to_string() {
       println!("ParamList->ε");
-      return Tree::new("ParamList->ε".to_string(), vec![]);
+      return AST::new("ParamList->ε".to_string(), vec![]);
     }
     println!("ParamList->Type Identifier ParamListTail");
     let ty = self.parse_type();
     let id = self.parse_identifier();
     let plt = self.parse_param_list_tail();
-    return Tree::new("ParamList".to_string(), vec![ty, id, plt]);
+    return AST::new("ParamList".to_string(), vec![ty, id, plt]);
   }
 
-  fn parse_param_list_tail(&mut self) -> Tree {
-    if self.current_token == ")".to_string() {
+  fn parse_param_list_tail(&mut self) -> AST {
+    if self.current_tokens[0] == ")".to_string() {
       println!("ParamListTail->ε");
-      return Tree::new("ParamListTail->ε".to_string(), vec![]);
+      return AST::new("ParamListTail->ε".to_string(), vec![]);
     }
     println!("ParamListTail->, Type Identifier ParamListTail");
-    let ty:Tree;
-    let id:Tree;
-    let plt:Tree;
-    if self.current_token == "," {
+    let ty:AST;
+    let id:AST;
+    let plt:AST;
+    if self.current_tokens[0] == "," {
       self.consume_token();
       ty = self.parse_type();
       id = self.parse_identifier();
       plt = self.parse_param_list_tail();
     }
     else {
-      panic!("parse_param_list_tail error, expected , but got {}", self.current_token);
+      panic!("parse_param_list_tail error, expected , but got {}", self.current_tokens[0]);
     }
-    return Tree::new("ParamListTail".to_string(), vec![ty, id, plt]);
+    return AST::new("ParamListTail".to_string(), vec![ty, id, plt]);
   }
 
-  fn parse_fn_body(&mut self) -> Tree {
+  fn parse_fn_body(&mut self) -> AST {
     println!("FnBody->{{StmtList}}");
-    let sl : Tree;
-    if self.current_token == "{" {
+    let sl : AST;
+    if self.current_tokens[0] == "{" {
       self.consume_token();
       sl = self.parse_stmt_list();
-      if self.current_token == "}" {
+      if self.current_tokens[0] == "}" {
         self.consume_token();
       }
       else {
-        panic!("parse_fn_body error, expected }} but got {}", self.current_token);
+        panic!("parse_fn_body error, expected }} but got {}", self.current_tokens[0]);
       }
     }
     else {
-      panic!("parse_fn_body error, expected {{ but got {}", self.current_token);
+      panic!("parse_fn_body error, expected {{ but got {}", self.current_tokens[0]);
     }
-    Tree::new("FnBody".to_string(), vec![sl])
+    AST::new("FnBody".to_string(), vec![sl])
   }
 
-  fn parse_stmt_list(&mut self) -> Tree {
-    if self.current_token != "}" {
+  fn parse_stmt_list(&mut self) -> AST {
+    if self.current_tokens[0] != "}" {
       println!("StmtList->Stmt StmtList");
       let s = self.parse_stmt();
       let sl = self.parse_stmt_list();
-      return Tree::new("StmtList".to_string(), vec![s, sl]);
+      return AST::new("StmtList".to_string(), vec![s, sl]);
     }
     else {
       println!("StmtList->ε");
-      return Tree::new("StmtList->ε".to_string(), vec![]);
+      return AST::new("StmtList->ε".to_string(), vec![]);
     }
 
   }
 
-  fn parse_stmt(&mut self) -> Tree {
-    println!("Stmt->VarDecl");
-    let vd = self.parse_var_decl();
-    return Tree::new("Stmt".to_string(), vec![vd]);
-    // match self.current_token.as_str() {
-    //   "VarDecl" => self.parse_var_decl(),
-    //   "VarDef" => self.parse_var_def(),
-    //   "Assign" => self.parse_assign(),
-    //   "pass" => self.consume_token(),
-    //   _ => (),
-    // }
+  fn parse_stmt(&mut self) -> AST {
+    if self.current_tokens[0] == "return" {
+      println!("Stmt->return Expr");
+      self.consume_token();
+      let ex = self.parse_expr();
+      return AST::new("Stmt->return".to_string(), vec![ex]);
+    }
+    while self.current_tokens.len() < 3 {
+      self.prefetch_token();
+    }
+    if self.current_tokens[2] == "=".to_string() {
+      println!("Stmt->VarDef");
+      let vd = self.parse_var_def();
+      return AST::new("Stmt".to_string(), vec![vd]);
+    } else if self.current_tokens[1] == "=".to_string() {
+      println!("Stmt->Assign");
+      let a = self.parse_assign();
+      return AST::new("Stmt".to_string(), vec![a]);
+    } else if self.current_tokens[0] == "pass".to_string(){
+      println!("Stmt->pass");
+      self.consume_token();
+      return AST::new("Stmt->pass".to_string(), vec![]);
+    } else {
+      println!("Stmt->VarDecl");
+      let vd = self.parse_var_decl();
+      return AST::new("Stmt".to_string(), vec![vd]);
+    }
   }
 
-  fn parse_var_decl(&mut self) -> Tree {
+  fn parse_var_decl(&mut self) -> AST {
     println!("VarDecl->Type Identifier");
     let ty = self.parse_type();
     let id = self.parse_identifier();
-    return Tree::new("VarDecl".to_string(), vec![ty, id]);
+    return AST::new("VarDecl".to_string(), vec![ty, id]);
   }
 
-  fn parse_var_def(&mut self) -> Tree {
+  fn parse_var_def(&mut self) -> AST {
     println!("VarDef->Type Identifier = Expr");
     let ty = self.parse_type();
     let id = self.parse_identifier();
-    if self.current_token == "=" {
+    if self.current_tokens[0] == "=" {
       self.consume_token();
       let ex = self.parse_expr();
-      return Tree::new("VarDef".to_string(), vec![ty, id, ex]);
+      return AST::new("VarDef".to_string(), vec![ty, id, ex]);
     }
     else {
-      panic!("parse_var_def error, expected = but got {}", self.current_token);
+      panic!("parse_var_def error, expected = but got {}", self.current_tokens[0]);
     }
   }
 
-  fn parse_assign(&mut self) -> Tree {
+  fn parse_assign(&mut self) -> AST {
     println!("Assign->Identifier = Expr");
     let id = self.parse_identifier();
-    if self.current_token == "=" {
+    if self.current_tokens[0] == "=" {
       self.consume_token();
       let ex = self.parse_expr();
-      return Tree::new("Assign".to_string(), vec![id, ex]);
+      return AST::new("Assign".to_string(), vec![id, ex]);
     }
     else {
-      panic!("parse_assign error, expected = but got {}", self.current_token);
+      panic!("parse_assign error, expected = but got {}", self.current_tokens[0]);
     }
   }
 
-  fn parse_expr(&mut self) -> Tree {
-    println!("Expr->Identifier");
-    let id = self.parse_identifier();
-    return Tree::new("Expr".to_string(), vec![id]);
-    // match self.current_token.as_str() {
-    //   "Identifier" => self.parse_identifier(),
-    //   "Integer" => self.consume_token(),
-    //   "Float" => self.consume_token(),
-    //   "StringLiteral" => self.consume_token(),
-    //   "(" => {
-    //     self.consume_token();
-    //     self.parse_expr();
-    //     if self.current_token == ")" {
-    //       self.consume_token();
-    //     }
-    //   }
-    //   _ => {
-    //     self.parse_expr();
-    //     self.parse_op();
-    //     self.parse_expr();
-    //   }
-    // }
+  fn parse_expr(&mut self) -> AST {
+    let left = self.parse_term();
+    let op = self.current_tokens[0].clone();
+    if op == "+" || op == "-" {
+      self.consume_token();
+      let right = self.parse_expr();
+      println!("Expr->Term {} Expr", op);
+      return AST::new("Expr->Op".to_string() + op.as_str(), vec![left, right]);
+    } {
+      println!("Expr->Term");
+      return AST::new("Expr".to_string(), vec![left]);
+    }
   }
 
-  fn parse_op(&mut self) -> Tree {
-    match self.current_token.as_str() {
-      "+" | "-" | "*" | "/" => {
-        println!("Op->{}", self.current_token);
-        let token = self.current_token.clone();
+  fn parse_term(&mut self) -> AST {
+    let left = self.parse_factor();
+    let op = self.current_tokens[0].clone();
+    if op == "*" || op == "/" {
+      self.consume_token();
+      let right = self.parse_term();
+      println!("Term->Factor {} Term", op);
+      return AST::new("Term->Op".to_string() + op.as_str(), vec![left, right]);
+    } else {
+      println!("Term->Factor");
+      return AST::new("Term".to_string(), vec![left]);
+    }
+  }
+
+  fn parse_factor(&mut self) -> AST {
+    if self.current_tokens[0] == "(" {
+      println!("Factor->(Expr)");
+      self.consume_token();
+      let ex = self.parse_expr();
+      if self.current_tokens[0] == ")" {
         self.consume_token();
-        return Tree::new("Op->".to_string()+token.as_str(), vec![]);
+      } else {
+        panic!("parse_factor error, expected ) but got {}", self.current_tokens[0]);
       }
-      _ => panic!("parse_op error, expected Op, but got {}", self.current_token),
+      return AST::new("Factor".to_string(), vec![ex]);
+    } else {
+      println!("Factor->Basic");
+      let basic = self.current_tokens[0].clone();
+      self.consume_token();
+      return AST::new("Factor->Basic ".to_string()+basic.as_str(), vec![]);
     }
   }
 }
 
 
-enum Expr {
-  Identifier(String),
-  Integer(i32),
-  Float(f64),
-  StringLiteral(String),
-  BinaryOp(Box<Expr>, Op, Box<Expr>),
-  Paren(Box<Expr>),
-}
+// enum Expr {
+//   Identifier(String),
+//   Integer(i32),
+//   Float(f64),
+//   StringLiteral(String),
+//   BinaryOp(Box<Expr>, Op, Box<Expr>),
+//   Paren(Box<Expr>),
+// }
 
-enum Op {
-  Add,
-  Sub,
-  Mul,
-  Div,
-}
+// enum Op {
+//   Add,
+//   Sub,
+//   Mul,
+//   Div,
+// }
