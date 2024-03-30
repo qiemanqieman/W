@@ -2,7 +2,7 @@
  * @Author: qiemanqieman 1324137924@qq.com
  * @Date: 2024-03-29 21:38:43
  * @LastEditors: qiemanqieman 1324137924@qq.com
- * @LastEditTime: 2024-03-30 20:24:41
+ * @LastEditTime: 2024-03-30 20:42:46
  * @FilePath: /W/w/src/interpreter.rs
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -25,6 +25,7 @@ impl Interpreter {
         "-".to_string(),
         "*".to_string(),
         "/".to_string(),
+        "^".to_string(),
       ],
     }
   }
@@ -32,8 +33,7 @@ impl Interpreter {
   fn available_registers(&self) -> String {
     let registers = vec![
       "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", "rcx", "rbx", "rsi",
-      "rdi",
-      // "rax", "rdx", 特殊用途，不要用于寄存器分配
+      "rdi", // "rax", "rdx", 特殊用途，不要用于寄存器分配
     ];
     for reg in registers {
       if !(self.used_registers.contains(&reg.to_string())) {
@@ -52,7 +52,8 @@ impl Interpreter {
     }
   }
 
-  fn get_op_code(&self, op: &str, oprands: Vec<String>) -> &str {
+  fn get_op_code(&self, op: &str, operands: Vec<String>) -> &str {
+    if operands.is_empty() {}
     match op {
       "+" => "addq",
       "-" => "subq",
@@ -83,71 +84,60 @@ impl Interpreter {
   // └─ FnList
   //    └─ ε
   pub fn generate_asm(&mut self, ast: &mut AST) -> String {
-    self.generate_asm_helper(ast)
+    let mut asm = String::new();
+    self.generate_asm_helper(ast, &mut asm);
+    asm
   }
 
   // 辅助函数，递归生成汇编代码
-  fn generate_asm_helper(&mut self, ast: &mut AST) -> String {
+  fn generate_asm_helper(&mut self, ast: &mut AST, asm: &mut String) {
     match ast.value.as_str() {
-      "Pg" => self.generate_asm_pg(ast),
-      "Fn" => self.generate_asm_fn(ast),
-      "FnBody" => self.generate_asm_fn_body(ast),
-      "StmtList" => self.generate_asm_stmt_list(ast),
-      "Stmt" => self.generate_asm_stmt(ast),
-      "Return" => self.generate_asm_ret(ast),
-      "Expr" => self.generate_asm_expr(ast),
-      "ε" => String::new(),
-      _ => String::new(),
+      "Pg" => self.generate_asm_pg(ast, asm),
+      "Fn" => self.generate_asm_fn(ast, asm),
+      "FnBody" => self.generate_asm_fn_body(ast, asm),
+      "StmtList" => self.generate_asm_stmt_list(ast, asm),
+      "Stmt" => self.generate_asm_stmt(ast, asm),
+      "Return" => self.generate_asm_ret(ast, asm),
+      "Expr" => self.generate_asm_expr(ast, asm),
+      "ε" => return,
+      _ => return,
     }
   }
 
-  fn generate_asm_pg(&mut self, ast: &mut AST) -> String {
-    let mut asm = String::new();
+  fn generate_asm_pg(&mut self, ast: &mut AST, asm: &mut String) {
     asm.push_str("	.text\n");
     asm.push_str("	.globl	main\n");
     for mut child in &mut ast.children {
-      asm.push_str(&self.generate_asm_helper(&mut child));
+      self.generate_asm_helper(&mut child, asm);
     }
-    asm
   }
 
-  fn generate_asm_fn(&mut self, ast: &mut AST) -> String {
-    let mut asm = String::new();
+  fn generate_asm_fn(&mut self, ast: &mut AST, asm: &mut String) {
     asm.push_str(&format!("{}:\n", ast.children[1].value));
-    asm.push_str(self.generate_asm_helper(&mut ast.children[3]).as_str());
-    asm
+    self.generate_asm_helper(&mut ast.children[3], asm);
   }
 
-  fn generate_asm_fn_body(&mut self, ast: &mut AST) -> String {
-    let mut asm = String::new();
-    asm.push_str(self.generate_asm_helper(&mut ast.children[0]).as_str());
-    asm
+  fn generate_asm_fn_body(&mut self, ast: &mut AST, asm: &mut String) {
+    self.generate_asm_helper(&mut ast.children[0], asm);
   }
 
-  fn generate_asm_stmt_list(&mut self, ast: &mut AST) -> String {
-    let mut asm = String::new();
+  fn generate_asm_stmt_list(&mut self, ast: &mut AST, asm: &mut String) {
     for mut child in &mut ast.children {
-      asm.push_str(&self.generate_asm_helper(&mut child));
+      self.generate_asm_helper(&mut child, asm);
     }
-    asm
   }
 
-  fn generate_asm_stmt(&mut self, ast: &mut AST) -> String {
-    let mut asm = String::new();
-    asm.push_str(self.generate_asm_helper(&mut ast.children[0]).as_str());
-    asm
+  fn generate_asm_stmt(&mut self, ast: &mut AST, asm: &mut String) {
+    self.generate_asm_helper(&mut ast.children[0], asm);
   }
 
-  fn generate_asm_ret(&mut self, ast: &mut AST) -> String {
-    let mut asm = String::new();
-    asm.push_str(self.generate_asm_helper(&mut ast.children[0]).as_str());
+  fn generate_asm_ret(&mut self, ast: &mut AST, asm: &mut String) {
+    self.generate_asm_helper(&mut ast.children[0], asm);
     asm.push_str(&format!("  movq %{}, %rax\n", ast.children[0].register));
     asm.push_str("	ret\n");
-    asm
   }
 
-  fn generate_asm_expr(&mut self, ast: &mut AST) -> String {
-    let mut asm = String::new();
+  fn generate_asm_expr(&mut self, ast: &mut AST, asm: &mut String) {
     let expression = ast.get_expression();
     println!("{:?}", expression);
     let mut operators = VecDeque::<String>::new();
@@ -160,7 +150,7 @@ impl Interpreter {
           while !operators.is_empty()
             && self.op_priority(operators.back().unwrap()) >= self.op_priority(token)
           {
-            self.step(&mut asm, &mut operators, &mut registers);
+            self.step(asm, &mut operators, &mut registers);
           }
           operators.push_back(token.clone());
         }
@@ -172,10 +162,9 @@ impl Interpreter {
       }
     }
     while !operators.is_empty() {
-      self.step(&mut asm, &mut operators, &mut registers);
+      self.step(asm, &mut operators, &mut registers);
     }
     ast.register = registers.pop_back().unwrap();
-    asm
   }
 
   fn step(
