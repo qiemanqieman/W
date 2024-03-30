@@ -2,7 +2,7 @@
  * @Author: qiemanqieman 1324137924@qq.com
  * @Date: 2024-03-29 21:38:43
  * @LastEditors: qiemanqieman 1324137924@qq.com
- * @LastEditTime: 2024-03-30 20:11:16
+ * @LastEditTime: 2024-03-30 20:24:41
  * @FilePath: /W/w/src/interpreter.rs
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -49,6 +49,16 @@ impl Interpreter {
       "*" | "/" => 2,
       "^" => 3,
       _ => 0,
+    }
+  }
+
+  fn get_op_code(&self, op: &str, oprands: Vec<String>) -> &str {
+    match op {
+      "+" => "addq",
+      "-" => "subq",
+      "*" => "imulq",
+      "/" => "idivq",
+      _ => "",
     }
   }
 
@@ -177,24 +187,17 @@ impl Interpreter {
     let operator = operators.pop_back().unwrap();
     let mut reg2 = registers.pop_back().unwrap();
     let mut reg1 = registers.pop_back().unwrap();
-    let op = match operator.as_str() {
-      "+" => "addq",
-      "-" => "subq",
-      "*" => "imulq",
-      "/" => "idivq",
-      _ => "",
-    };
-    if op == "idivq" {
-      asm.push_str(&format!("  movq %{}, %rax\n", reg1));
-      asm.push_str("  xor %rdx, %rdx\n");
-      asm.push_str("	cqto\n");
-      asm.push_str(&format!("  idivq %{}\n", reg2));
-      asm.push_str(&format!("  movq %rax, %{}\n", reg2));
+    let op_code = self.get_op_code(&operator, vec![reg1.clone(), reg2.clone()]);
+    if op_code == "idivq" {
+      asm.push_str(&format!(
+        "  movq %{0}, %rax\n  xor %rdx, %rdx\n	cqto\n  idivq %{1}\n  movq %rax, %{1}\n",
+        reg1, reg2
+      ));
     } else {
-      if op == "subq" {
+      if op_code == "subq" {
         swap(&mut reg1, &mut reg2);
       }
-      asm.push_str(&format!("	{} %{}, %{}\n", op, reg1, reg2));
+      asm.push_str(&format!("	{} %{}, %{}\n", op_code, reg1, reg2));
     }
     self.used_registers.retain(|x| x != &reg1);
     registers.push_back(reg2.clone());
