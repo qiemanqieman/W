@@ -1,21 +1,10 @@
 use std::{char, str::Chars};
 
-// #[derive(Debug, PartialEq)]
-// enum Token {
-//   Identifier(String),
-//   Integer(String),
-//   Float(String),
-//   StringLiteral(String),
-//   Operator(String),
-//   Keyword(String),
-//   Delimiter(String),
-// }
-
 pub struct Lexer<'a> {
   input: Chars<'a>,
   current_char: Option<char>,
   current_indent: i8,
-  indent_left:i8,
+  indent_left: i8,
 }
 
 impl<'a> Lexer<'a> {
@@ -50,7 +39,7 @@ impl<'a> Lexer<'a> {
   fn compute_indent(&mut self) {
     let mut indent;
     if let Some(_) = self.current_char {
-      indent = self.current_indent*2;
+      indent = self.current_indent * 2;
       while let Some(ch) = self.current_char {
         if ch == ' ' {
           indent += 1;
@@ -59,11 +48,12 @@ impl<'a> Lexer<'a> {
           if ch == '\n' {
             self.advance();
             indent = 0;
-          } else {break;};
+          } else {
+            break;
+          };
         }
       }
-    }
-    else {
+    } else {
       indent = 0;
     }
     if self.current_char.is_none() {
@@ -74,7 +64,7 @@ impl<'a> Lexer<'a> {
     if indent != self.current_indent {
       self.indent_left = indent - self.current_indent;
       self.current_indent = indent;
-    } 
+    }
   }
 
   fn read_identifier(&mut self) -> String {
@@ -178,8 +168,7 @@ impl<'a> Lexer<'a> {
     if self.indent_left > 0 {
       self.indent_left -= 1;
       return "{".to_string();
-    }
-    else if self.indent_left < 0 {
+    } else if self.indent_left < 0 {
       self.indent_left += 1;
       return "}".to_string();
     }
@@ -188,13 +177,16 @@ impl<'a> Lexer<'a> {
       match ch {
         '0'..='9' => self.read_number(),
         '"' => self.read_string_literal(),
-        '+' | '-' | '*' | '/' | '%' | '=' | '<' | '>' | '!' | '&' | '|' | '^' | '~' => 
-          self.read_operator(),
+        '+' | '-' | '*' | '/' | '%' | '=' | '<' | '>' | '!' | '&' | '|' | '^' | '~' => {
+          self.read_operator()
+        }
         '(' | ')' | '[' | ']' | ',' | ':' => self.read_delimiter(),
         _ => {
           let identifier = self.read_keyword_or_identifier();
           match identifier.as_str() {
-            "if" | "else" | "while" | "for" | "int" | "return" | "true" | "false" | "auto" => identifier,
+            "if" | "else" | "while" | "for" | "int" | "return" | "true" | "false" | "auto" => {
+              identifier
+            }
             _ => identifier,
           }
         }
@@ -204,10 +196,6 @@ impl<'a> Lexer<'a> {
     }
   }
 }
-
-
-
-
 
 #[cfg(test)]
 mod tests {
