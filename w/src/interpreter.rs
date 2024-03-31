@@ -2,18 +2,24 @@
  * @Author: qiemanqieman 1324137924@qq.com
  * @Date: 2024-03-29 21:38:43
  * @LastEditors: qiemanqieman 1324137924@qq.com
- * @LastEditTime: 2024-03-30 20:42:46
+ * @LastEditTime: 2024-03-31 19:13:11
  * @FilePath: /W/w/src/interpreter.rs
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 
 use crate::ast::AST;
-use std::{collections::VecDeque, mem::swap};
+use std::{
+  collections::{HashMap, VecDeque},
+  mem::swap,
+};
 
 pub struct Interpreter {
   used_registers: Vec<String>,
   // all_registers: Vec<String>,
   operators: Vec<String>,
+  fn_stack: Vec<i64>,
+  symbol_table: HashMap<String, HashMap<String, i64>>, // 函数名 -> 变量名 -> 偏移值
+  current_parse_fn: String,
 }
 
 impl Interpreter {
@@ -27,13 +33,17 @@ impl Interpreter {
         "/".to_string(),
         "^".to_string(),
       ],
+      fn_stack: vec![0, 0],
+      symbol_table: HashMap::new(),
+      current_parse_fn: String::new(),
     }
   }
 
   fn available_registers(&self) -> String {
     let registers = vec![
-      "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", "rcx", "rbx", "rsi",
-      "rdi", // "rax", "rdx", 特殊用途，不要用于寄存器分配
+      "%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15", "%rcx", "%rbx", "%rsi",
+      "%rdi",
+      // "rax", "rdx", 特殊用途，不要用于寄存器分配
     ];
     for reg in registers {
       if !(self.used_registers.contains(&reg.to_string())) {
@@ -93,10 +103,14 @@ impl Interpreter {
   fn generate_asm_helper(&mut self, ast: &mut AST, asm: &mut String) {
     match ast.value.as_str() {
       "Pg" => self.generate_asm_pg(ast, asm),
+      "FnList" => self.generate_asm_fn_list(ast, asm),
       "Fn" => self.generate_asm_fn(ast, asm),
       "FnBody" => self.generate_asm_fn_body(ast, asm),
       "StmtList" => self.generate_asm_stmt_list(ast, asm),
       "Stmt" => self.generate_asm_stmt(ast, asm),
+      "VarDecl" => self.generate_asm_var_decl(ast, asm),
+      "VarDef" => self.generate_asm_var_def(ast, asm),
+      "VarAssign" => self.generate_asm_var_assign(ast, asm),
       "Return" => self.generate_asm_ret(ast, asm),
       "Expr" => self.generate_asm_expr(ast, asm),
       "ε" => return,
@@ -105,6 +119,8 @@ impl Interpreter {
   }
 
   fn generate_asm_pg(&mut self, ast: &mut AST, asm: &mut String) {
+    // asm.push_str("  .data\n");
+    // asm.push_str("stack_bottom:  .quad 0x0\n");
     asm.push_str("	.text\n");
     asm.push_str("	.globl	main\n");
     for mut child in &mut ast.children {
@@ -112,8 +128,33 @@ impl Interpreter {
     }
   }
 
+  fn generate_asm_fn_list(&mut self, ast: &mut AST, asm: &mut String) {
+    for mut child in &mut ast.children {
+      self.generate_asm_helper(&mut child, asm);
+    }
+  }
+
   fn generate_asm_fn(&mut self, ast: &mut AST, asm: &mut String) {
     asm.push_str(&format!("{}:\n", ast.children[1].value));
+    if ast.children[1].value == "main" {
+      asm.push_str(
+        "# 分配栈空间 1 页 4096 字节
+  movq $0, %rdi
+  movq $4096, %rsi
+  movq $3, %rdx
+  movq $34, %r10
+  movq $-1, %r8  
+  movq $0, %r9
+  movq $9, %rax
+  syscall
+  movq %rax, %rbp
+  \n\n",
+      );
+    }
+    self
+      .symbol_table
+      .insert(ast.children[1].value.clone(), HashMap::new());
+    self.current_parse_fn = ast.children[1].value.clone();
     self.generate_asm_helper(&mut ast.children[3], asm);
   }
 
@@ -131,9 +172,61 @@ impl Interpreter {
     self.generate_asm_helper(&mut ast.children[0], asm);
   }
 
+  fn generate_asm_var_decl(&mut self, ast: &mut AST, _asm: &mut String) {
+    let var_name = &ast.children[1].value;
+    let var_offset = self.symbol_table.get(&self.current_parse_fn).unwrap().len() as i64 * 8;
+    self
+      .symbol_table
+      .get_mut(&self.current_parse_fn)
+      .unwrap()
+      .insert(var_name.clone(), var_offset);
+  }
+
+  fn generate_asm_var_def(&mut self, ast: &mut AST, asm: &mut String) {
+    let var_name = &ast.children[1].value;
+    let var_offset = self.symbol_table.get(&self.current_parse_fn).unwrap().len() as i64 * 8;
+    self
+      .symbol_table
+      .get_mut(&self.current_parse_fn)
+      .unwrap()
+      .insert(var_name.clone(), var_offset);
+    self.generate_asm_helper(&mut ast.children[2], asm);
+    if ast.children[2].register.starts_with("%") {
+      asm.push_str(&format!(
+        "  movq {}, {}(%rbp)\n",
+        ast.children[2].register, var_offset
+      ));
+    } else {
+      let reg = self.available_registers();
+      asm.push_str(&format!("  movq {}, {}\n", ast.children[2].register, reg));
+      asm.push_str(&format!("  movq {}, {}(%rbp)\n", reg, var_offset));
+    }
+    self
+      .used_registers
+      .retain(|x| x != &ast.children[2].register);
+  }
+
+  fn generate_asm_var_assign(&mut self, ast: &mut AST, asm: &mut String) {
+    let var_name = &ast.children[0].value;
+    let var_offset = *self
+      .symbol_table
+      .get(&self.current_parse_fn)
+      .unwrap()
+      .get(var_name)
+      .unwrap();
+    self.generate_asm_helper(&mut ast.children[1], asm);
+    asm.push_str(&format!(
+      "  movq {}, {}(%rbp)\n",
+      ast.children[1].register, var_offset
+    ));
+    self
+      .used_registers
+      .retain(|x| x != &ast.children[1].register);
+  }
+
   fn generate_asm_ret(&mut self, ast: &mut AST, asm: &mut String) {
     self.generate_asm_helper(&mut ast.children[0], asm);
-    asm.push_str(&format!("  movq %{}, %rax\n", ast.children[0].register));
+    asm.push_str(&format!("  movq {}, %rax\n", ast.children[0].register));
     asm.push_str("	ret\n");
   }
 
@@ -155,10 +248,20 @@ impl Interpreter {
           operators.push_back(token.clone());
         }
       } else {
-        let reg = self.available_registers();
-        registers.push_back(reg.clone());
-        self.used_registers.push(reg.clone());
-        asm.push_str(&format!("	movq ${}, %{}\n", token, reg));
+        if is_var(token.as_str()) {
+          let var_offset = *self
+            .symbol_table
+            .get(&self.current_parse_fn)
+            .unwrap()
+            .get(token)
+            .unwrap();
+          registers.push_back(format!("{}(%rbp)", var_offset));
+        } else {
+          let reg = self.available_registers();
+          registers.push_back(reg.clone());
+          self.used_registers.push(reg.clone());
+          asm.push_str(&format!("	movq ${}, {}\n", token, reg));
+        }
       }
     }
     while !operators.is_empty() {
@@ -167,6 +270,7 @@ impl Interpreter {
     ast.register = registers.pop_back().unwrap();
   }
 
+  /// 从运算符栈中弹出一个运算符，执行一步运算
   fn step(
     &mut self,
     asm: &mut String,
@@ -179,16 +283,20 @@ impl Interpreter {
     let op_code = self.get_op_code(&operator, vec![reg1.clone(), reg2.clone()]);
     if op_code == "idivq" {
       asm.push_str(&format!(
-        "  movq %{0}, %rax\n  xor %rdx, %rdx\n	cqto\n  idivq %{1}\n  movq %rax, %{1}\n",
+        "  movq {0}, %rax\n  xor %rdx, %rdx\n	cqto\n  idivq {1}\n  movq %rax, {1}\n",
         reg1, reg2
       ));
     } else {
       if op_code == "subq" {
         swap(&mut reg1, &mut reg2);
       }
-      asm.push_str(&format!("	{} %{}, %{}\n", op_code, reg1, reg2));
+      asm.push_str(&format!("	{} {}, {}\n", op_code, reg1, reg2));
     }
     self.used_registers.retain(|x| x != &reg1);
     registers.push_back(reg2.clone());
   }
+}
+
+fn is_var(token: &str) -> bool {
+  token.chars().all(|c| c <= 'z' && c >= 'a')
 }

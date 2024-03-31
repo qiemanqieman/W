@@ -63,7 +63,6 @@ pub fn ast2exe(mut ast: AST, output_filename: String) {
   // 解析抽象语法树，生成汇编代码
   let mut interpreter = Interpreter::new();
   let asm = interpreter.generate_asm(&mut ast);
-  // let asm = ast.gen_asm();
 
   fs::write(output_filename.clone(), asm).expect("Failed to write to file");
   println!("Assembly code written to file: {}", output_filename);
