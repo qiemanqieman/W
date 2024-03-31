@@ -2,12 +2,13 @@
  * @Author: qiemanqieman 1324137924@qq.com
  * @Date: 2024-03-29 21:38:43
  * @LastEditors: qiemanqieman 1324137924@qq.com
- * @LastEditTime: 2024-03-31 19:13:11
+ * @LastEditTime: 2024-03-31 21:15:12
  * @FilePath: /W/w/src/interpreter.rs
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 
 use crate::ast::AST;
+use crate::aux::*;
 use std::{
   collections::{HashMap, VecDeque},
   mem::swap,
@@ -17,7 +18,7 @@ pub struct Interpreter {
   used_registers: Vec<String>,
   // all_registers: Vec<String>,
   operators: Vec<String>,
-  fn_stack: Vec<i64>,
+  call_stack: Vec<i64>,
   symbol_table: HashMap<String, HashMap<String, i64>>, // 函数名 -> 变量名 -> 偏移值
   current_parse_fn: String,
 }
@@ -33,7 +34,7 @@ impl Interpreter {
         "/".to_string(),
         "^".to_string(),
       ],
-      fn_stack: vec![0, 0],
+      call_stack: vec![0, 0],
       symbol_table: HashMap::new(),
       current_parse_fn: String::new(),
     }
@@ -110,8 +111,9 @@ impl Interpreter {
       "Stmt" => self.generate_asm_stmt(ast, asm),
       "VarDecl" => self.generate_asm_var_decl(ast, asm),
       "VarDef" => self.generate_asm_var_def(ast, asm),
-      "VarAssign" => self.generate_asm_var_assign(ast, asm),
+      "Assign" => self.generate_asm_var_assign(ast, asm),
       "Return" => self.generate_asm_ret(ast, asm),
+      "FnCall" => self.generate_asm_fn_call(ast, asm),
       "Expr" => self.generate_asm_expr(ast, asm),
       "ε" => return,
       _ => return,
@@ -230,6 +232,26 @@ impl Interpreter {
     asm.push_str("	ret\n");
   }
 
+  fn generate_asm_fn_call(&mut self, ast: &mut AST, asm: &mut String) {
+    let fn_name = &ast.children[0].value;
+    // let mut args = Vec::new();
+    // for i in 1..ast.children.len() {
+    //   self.generate_asm_helper(&mut ast.children[i], asm);
+    //   args.push(ast.children[i].register.clone());
+    // }
+    // for reg in args.iter() {
+    //   asm.push_str(&format!("  pushq {}\n", reg));
+    // }
+    let cur_stack_top = self.call_stack.last().unwrap();
+    let inc = self.symbol_table.get(&self.current_parse_fn).unwrap().len() as i64 * 8;
+    self.call_stack.push(cur_stack_top + inc);
+    asm.push_str(&format!("  addq ${}, %rbp\n", inc));
+    asm.push_str(&format!("  call {}\n", fn_name));
+    asm.push_str(&format!("  subq ${}, %rbp\n", inc));
+    self.call_stack.pop();
+    // asm.push_str("  addq $8, %rsp\n");
+  }
+
   fn generate_asm_expr(&mut self, ast: &mut AST, asm: &mut String) {
     let expression = ast.get_expression();
     println!("{:?}", expression);
@@ -248,14 +270,31 @@ impl Interpreter {
           operators.push_back(token.clone());
         }
       } else {
-        if is_var(token.as_str()) {
-          let var_offset = *self
+        if is_identifier(token.as_str()) {
+          if self
             .symbol_table
             .get(&self.current_parse_fn)
             .unwrap()
-            .get(token)
-            .unwrap();
-          registers.push_back(format!("{}(%rbp)", var_offset));
+            .contains_key(token)
+          {
+            let var_offset = *self
+              .symbol_table
+              .get(&self.current_parse_fn)
+              .unwrap()
+              .get(token)
+              .unwrap();
+            registers.push_back(format!("{}(%rbp)", var_offset));
+          } else {
+            // 函数调用
+            self.generate_asm_fn_call(
+              &mut AST::new("FnCall".to_string(), vec![AST::new(token.clone(), vec![])]),
+              asm,
+            );
+            let reg = self.available_registers();
+            registers.push_back(reg.clone());
+            asm.push_str(&format!("  movq %rax, {}\n", reg));
+            self.used_registers.push(reg.clone());
+          }
         } else {
           let reg = self.available_registers();
           registers.push_back(reg.clone());
@@ -290,13 +329,15 @@ impl Interpreter {
       if op_code == "subq" {
         swap(&mut reg1, &mut reg2);
       }
-      asm.push_str(&format!("	{} {}, {}\n", op_code, reg1, reg2));
+      if reg1.starts_with("%") || reg2.starts_with("%") {
+        asm.push_str(&format!("	{} {}, {}\n", op_code, reg1, reg2));
+      } else {
+        let reg = self.available_registers();
+        asm.push_str(&format!("	movq {}, {}\n", reg1, reg));
+        asm.push_str(&format!("	{} {}, {}\n", op_code, reg, reg2));
+      }
     }
     self.used_registers.retain(|x| x != &reg1);
     registers.push_back(reg2.clone());
   }
-}
-
-fn is_var(token: &str) -> bool {
-  token.chars().all(|c| c <= 'z' && c >= 'a')
 }

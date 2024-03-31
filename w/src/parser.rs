@@ -1,4 +1,5 @@
 use crate::ast::AST;
+use crate::aux::*;
 use crate::lexer::Lexer;
 use core::panic;
 use std::collections::VecDeque;
@@ -220,11 +221,28 @@ impl<'a> Parser<'a> {
         "Stmt".to_string(),
         vec![AST::new("pass".to_string(), vec![])],
       );
+    } else if is_identifier(self.current_tokens[0].as_str())
+      && self.current_tokens[1] == "(".to_string()
+    {
+      println!("Stmt->FnCall");
+      let c = self.parse_fn_call();
+      return AST::new("Stmt".to_string(), vec![c]);
     } else {
       println!("Stmt->VarDecl");
       let vd = self.parse_var_decl();
       return AST::new("Stmt".to_string(), vec![vd]);
     }
+  }
+
+  fn parse_fn_call(&mut self) -> AST {
+    println!("FnCall->Identifier(ExprList)");
+    let fn_name = self.current_tokens[0].clone();
+    self.consume_token();
+    while self.current_tokens[0] != ")".to_string() {
+      self.consume_token();
+    }
+    self.consume_token();
+    return AST::new("FnCall".to_string(), vec![AST::new(fn_name, vec![])]);
   }
 
   fn parse_return(&mut self) -> AST {
@@ -301,6 +319,9 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_factor(&mut self) -> AST {
+    while self.current_tokens.len() < 2 {
+      self.prefetch_token();
+    }
     if self.current_tokens[0] == "(" {
       println!("Factor->(Expr)");
       self.consume_token();
@@ -314,6 +335,10 @@ impl<'a> Parser<'a> {
         );
       }
       return AST::new("Factor".to_string(), vec![ex]);
+    } else if self.current_tokens[1] == "(" {
+      println!("Factor->FnCall");
+      let fc = self.parse_fn_call();
+      return AST::new("Factor".to_string(), vec![fc]);
     } else {
       println!("Factor->Basic");
       let bs = self.parse_basic();
