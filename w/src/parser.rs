@@ -237,12 +237,19 @@ impl<'a> Parser<'a> {
   fn parse_fn_call(&mut self) -> AST {
     println!("FnCall->Identifier(ExprList)");
     let fn_name = self.current_tokens[0].clone();
-    self.consume_token();
+    self.consume_token(); // 跳过函数名
+    self.consume_token(); // 跳过左括号
+    let mut expr_list = vec![];
+    expr_list.push(AST::new(fn_name, vec![]));
     while self.current_tokens[0] != ")".to_string() {
-      self.consume_token();
+      let expr = self.parse_expr();
+      expr_list.push(expr);
+      if self.current_tokens[0] == "," {
+        self.consume_token();
+      }
     }
     self.consume_token();
-    return AST::new("FnCall".to_string(), vec![AST::new(fn_name, vec![])]);
+    return AST::new("FnCall".to_string(), expr_list);
   }
 
   fn parse_return(&mut self) -> AST {
@@ -334,7 +341,14 @@ impl<'a> Parser<'a> {
           self.current_tokens[0]
         );
       }
-      return AST::new("Factor".to_string(), vec![ex]);
+      return AST::new(
+        "Factor".to_string(),
+        vec![
+          AST::new("(".to_string(), vec![]),
+          ex,
+          AST::new(")".to_string(), vec![]),
+        ],
+      );
     } else if self.current_tokens[1] == "(" {
       println!("Factor->FnCall");
       let fc = self.parse_fn_call();

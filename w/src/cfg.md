@@ -33,7 +33,7 @@ Stmt -> VarDecl
       | Return
       | FnCall
 
-FnCall -> Identifier ( ArgList )
+FnCall -> Identifier ( ExprList )
 
 VarDecl -> Type Identifier
 VarDef -> Type Identifier = Expr

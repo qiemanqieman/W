@@ -2,7 +2,7 @@
  * @Author: qiemanqieman 1324137924@qq.com
  * @Date: 2024-03-25 23:53:18
  * @LastEditors: qiemanqieman 1324137924@qq.com
- * @LastEditTime: 2024-03-31 13:12:38
+ * @LastEditTime: 2024-04-01 23:31:29
  * @FilePath: /W/w/src/ast.rs
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -47,6 +47,18 @@ impl AST {
       return vec![self.value.clone()];
     }
     let mut expression = vec![];
+    if self.value == "FnCall" {
+      expression.push(self.children[0].value.clone());
+      expression.push("op(".to_string());
+      let mut i = 1;
+      let len = self.children.len();
+      while i < len {
+        expression.extend(self.children[i].get_expression());
+        i += 1;
+      }
+      expression.push("op)".to_string());
+      return expression;
+    }
     for child in &self.children {
       expression.extend(child.get_expression());
     }
