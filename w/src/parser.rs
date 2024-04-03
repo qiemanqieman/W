@@ -203,6 +203,16 @@ impl<'a> Parser<'a> {
     }
   }
 
+  fn parse_loop_stmt(&mut self) -> AST {
+    println!("LoopStmt->while Expr {{ StmtList }}");
+    self.consume_token(); // while token
+    let ex = self.parse_expr();
+    self.consume_token(); // { token
+    let sl = self.parse_stmt_list();
+    self.consume_token(); // } token
+    return AST::new("LoopStmt".to_string(), vec![ex, sl]);
+  }
+
   fn parse_branch_stmt(&mut self) -> AST {
     println!("BranchStmt->if Expr {{ StmtList }} else {{ StmtList }}");
     self.consume_token(); // if token
@@ -218,6 +228,11 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_stmt(&mut self) -> AST {
+    if self.current_tokens[0] == "while" {
+      println!("Stmt->LoopStmt");
+      let ls = self.parse_loop_stmt();
+      return AST::new("Stmt".to_string(), vec![ls]);
+    }
     if self.current_tokens[0] == "if" {
       println!("Stmt->BranchStmt");
       let bs = self.parse_branch_stmt();
@@ -321,6 +336,7 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_expr(&mut self) -> AST {
+    // TODO 应该改为根据优先级解析，而不是仅仅三层解析
     let left = self.parse_term();
     let op = self.current_tokens[0].clone();
     if op == "+"

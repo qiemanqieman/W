@@ -1,7 +1,7 @@
 /w/target
-/tmp/*
+/tmp
+# !/tmp/return_2.w
 /external/*
-!/tmp/return_2.w
 /w/build
-/w/log/*
-!/w/log/log.txt
+/w/log
+# !/w/log/log.txt

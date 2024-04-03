@@ -2,7 +2,7 @@
  * @Author: qiemanqieman 1324137924@qq.com
  * @Date: 2024-03-23 15:49:34
  * @LastEditors: qiemanqieman 1324137924@qq.com
- * @LastEditTime: 2024-04-03 22:10:06
+ * @LastEditTime: 2024-04-04 00:18:23
  * @FilePath: /W/w/src/cfg.md
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -33,6 +33,7 @@ Stmt -> VarDecl
       | Return
       | Expr
       | BranchStmt
+      | LoopStmt 
 
 BranchStmt -> if Expr { StmtList } else { StmtList }
 

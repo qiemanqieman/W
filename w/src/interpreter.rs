@@ -2,7 +2,7 @@
  * @Author: qiemanqieman 1324137924@qq.com
  * @Date: 2024-03-29 21:38:43
  * @LastEditors: qiemanqieman 1324137924@qq.com
- * @LastEditTime: 2024-04-03 22:46:54
+ * @LastEditTime: 2024-04-04 00:08:58
  * @FilePath: /W/w/src/interpreter.rs
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,6 +10,7 @@
 use crate::ast::AST;
 use crate::aux::*;
 use std::collections::{HashMap, VecDeque};
+use std::time::SystemTime;
 
 pub struct Interpreter {
   used_registers: Vec<String>,
@@ -134,6 +135,7 @@ impl Interpreter {
       "Assign" => self.generate_asm_var_assign(ast, asm),
       "Return" => self.generate_asm_ret(ast, asm),
       "BranchStmt" => self.generate_asm_branch_stmt(ast, asm),
+      "LoopStmt" => self.generate_asm_loop_stmt(ast, asm),
       "Expr" => self.generate_asm_expr(ast, asm),
       "ε" => return,
       _ => return,
@@ -294,11 +296,36 @@ impl Interpreter {
     asm.push_str("	ret\n");
   }
 
+  fn generate_asm_loop_stmt(&mut self, ast: &mut AST, asm: &mut String) {
+    let sys_time = SystemTime::now()
+      .duration_since(SystemTime::UNIX_EPOCH)
+      .unwrap()
+      .as_nanos()
+      .to_string();
+    let loop_label = self.current_interpret_fn.clone() + sys_time.as_str() + "looplabel";
+    let end_label = self.current_interpret_fn.clone() + sys_time.as_str() + "endlabel";
+    asm.push_str(&format!("{}:\n", loop_label));
+    self.generate_asm_helper(&mut ast.children[0], asm);
+    asm.push_str(&format!("  cmpq $0, {}\n", ast.children[0].register));
+    self
+      .used_registers
+      .retain(|x| x != &ast.children[0].register);
+    asm.push_str(&format!("  je {}\n", end_label));
+    self.generate_asm_helper(&mut ast.children[1], asm);
+    asm.push_str(&format!("  jmp {}\n", loop_label));
+    asm.push_str(&format!("{}:\n", end_label));
+  }
+
   fn generate_asm_branch_stmt(&mut self, ast: &mut AST, asm: &mut String) {
     self.generate_asm_helper(&mut ast.children[0], asm);
     let reg = ast.children[0].register.clone();
-    let equal_label = "equal_label".to_string();
-    let next_label = "next_label".to_string();
+    let sys_time = SystemTime::now()
+      .duration_since(SystemTime::UNIX_EPOCH)
+      .unwrap()
+      .as_nanos()
+      .to_string();
+    let equal_label = self.current_interpret_fn.clone() + sys_time.as_str() + "equallabel";
+    let next_label = self.current_interpret_fn.clone() + sys_time.as_str() + "nextlabel";
     asm.push_str(&format!("  cmpq $0, {}\n", reg));
     self.used_registers.retain(|x| x != &reg);
     asm.push_str(&format!("  je {}\n", equal_label));

@@ -12,19 +12,74 @@ Return->Expr
 Factor->FnCall
 FnCall->Identifier(ExprList)
 Factor->Basic
-Basic->10
+Basic->5
+Term->Factor
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->3
+Term->Factor
+Expr->Term
+Factor->Basic
+Basic->2
+Term->Factor
+Term->Factor * Term
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->5
+Term->Factor
+Expr->Term
 Term->Factor
 Factor->FnCall
 FnCall->Identifier(ExprList)
 Factor->Basic
 Basic->1
 Term->Factor
-Expr->Term
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->2
 Term->Factor
 Expr->Term
+Term->Factor
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->11
+Term->Factor
+Expr->Term
+Term->Factor
+Factor->Basic
+Basic->3
+Term->Factor
+Expr->Term
+Expr->Term + Expr
 Expr->Term - Expr
+Expr->Term + Expr
 Term->Factor
 Expr->Term
+Expr->Term + Expr
+Expr->Term - Expr
+Expr->Term + Expr
+Term->Factor
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->3
+Term->Factor
+Expr->Term
+Term->Factor
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->10
+Term->Factor
+Expr->Term
+Term->Factor
+Expr->Term
+Expr->Term + Expr
+Expr->Term + Expr
 StmtList->ε
 FnList->Fn FnList
 Fn->Type Identifier Param FnBody FnList
@@ -40,27 +95,24 @@ StmtList->Stmt StmtList
 Stmt->BranchStmt
 BranchStmt->if Expr { StmtList } else { StmtList }
 Factor->Basic
-Basic->1
+Basic->a
 Term->Factor
 Factor->Basic
-Basic->a
+Basic->2
 Term->Factor
 Expr->Term
 Expr->Term < Expr
 StmtList->Stmt StmtList
 Stmt->Return
 Return->Expr
-Factor->FnCall
-FnCall->Identifier(ExprList)
 Factor->Basic
 Basic->a
 Term->Factor
-Factor->Basic
-Basic->1
-Term->Factor
 Expr->Term
-Expr->Term - Expr
-Term->Factor
+StmtList->ε
+StmtList->Stmt StmtList
+Stmt->Return
+Return->Expr
 Factor->FnCall
 FnCall->Identifier(ExprList)
 Factor->Basic
@@ -72,16 +124,19 @@ Term->Factor
 Expr->Term
 Expr->Term - Expr
 Term->Factor
-Expr->Term
-Expr->Term + Expr
-StmtList->ε
-StmtList->Stmt StmtList
-Stmt->Return
-Return->Expr
+Factor->FnCall
+FnCall->Identifier(ExprList)
 Factor->Basic
 Basic->a
 Term->Factor
+Factor->Basic
+Basic->1
+Term->Factor
 Expr->Term
+Expr->Term - Expr
+Term->Factor
+Expr->Term
+Expr->Term + Expr
 StmtList->ε
 StmtList->ε
 FnList->Fn FnList
@@ -105,6 +160,239 @@ Term->Factor
 Term->Factor * Term
 Expr->Term
 StmtList->ε
+FnList->Fn FnList
+Fn->Type Identifier Param FnBody FnList
+Type->int
+Identifier->funca
+Param->(ParamList)
+ParamList->Type Identifier ParamListTail
+Type->int
+Identifier->a
+ParamListTail->ε
+FnBody->{StmtList}
+StmtList->Stmt StmtList
+Stmt->BranchStmt
+BranchStmt->if Expr { StmtList } else { StmtList }
+Factor->Basic
+Basic->a
+Term->Factor
+Factor->Basic
+Basic->10
+Term->Factor
+Expr->Term
+Expr->Term > Expr
+StmtList->Stmt StmtList
+Stmt->Return
+Return->Expr
+Factor->Basic
+Basic->a
+Term->Factor
+Expr->Term
+StmtList->ε
+StmtList->Stmt StmtList
+Stmt->BranchStmt
+BranchStmt->if Expr { StmtList } else { StmtList }
+Factor->Basic
+Basic->a
+Term->Factor
+Factor->Basic
+Basic->5
+Term->Factor
+Expr->Term
+Expr->Term > Expr
+StmtList->Stmt StmtList
+Stmt->Return
+Return->Expr
+Factor->Basic
+Basic->a
+Factor->Basic
+Basic->a
+Term->Factor
+Term->Factor * Term
+Expr->Term
+StmtList->ε
+StmtList->Stmt StmtList
+Stmt->Return
+Return->Expr
+Factor->Basic
+Basic->a
+Factor->Basic
+Basic->a
+Factor->Basic
+Basic->a
+Term->Factor
+Term->Factor * Term
+Term->Factor * Term
+Expr->Term
+StmtList->ε
+StmtList->ε
+StmtList->ε
+FnList->Fn FnList
+Fn->Type Identifier Param FnBody FnList
+Type->int
+Identifier->funcb
+Param->(ParamList)
+ParamList->Type Identifier ParamListTail
+Type->int
+Identifier->a
+ParamListTail->ε
+FnBody->{StmtList}
+StmtList->Stmt StmtList
+Stmt->VarDef
+VarDef->Type Identifier = Expr
+Type->int
+Identifier->b
+Factor->Basic
+Basic->0
+Term->Factor
+Expr->Term
+StmtList->Stmt StmtList
+Stmt->LoopStmt
+LoopStmt->while Expr { StmtList }
+Factor->Basic
+Basic->a
+Term->Factor
+Factor->Basic
+Basic->0
+Term->Factor
+Expr->Term
+Expr->Term > Expr
+StmtList->Stmt StmtList
+Stmt->Assign
+Assign->Identifier = Expr
+Identifier->b
+Factor->Basic
+Basic->b
+Term->Factor
+Factor->Basic
+Basic->a
+Term->Factor
+Expr->Term
+Expr->Term + Expr
+StmtList->Stmt StmtList
+Stmt->Assign
+Assign->Identifier = Expr
+Identifier->a
+Factor->Basic
+Basic->a
+Term->Factor
+Factor->Basic
+Basic->1
+Term->Factor
+Expr->Term
+Expr->Term - Expr
+StmtList->ε
+StmtList->Stmt StmtList
+Stmt->Return
+Return->Expr
+Factor->Basic
+Basic->b
+Term->Factor
+Expr->Term
+StmtList->ε
+FnList->Fn FnList
+Fn->Type Identifier Param FnBody FnList
+Type->int
+Identifier->accumulate
+Param->(ParamList)
+ParamList->Type Identifier ParamListTail
+Type->int
+Identifier->a
+ParamListTail->ε
+FnBody->{StmtList}
+StmtList->Stmt StmtList
+Stmt->VarDef
+VarDef->Type Identifier = Expr
+Type->int
+Identifier->res
+Factor->Basic
+Basic->0
+Term->Factor
+Expr->Term
+StmtList->Stmt StmtList
+Stmt->VarDef
+VarDef->Type Identifier = Expr
+Type->int
+Identifier->cur
+Factor->Basic
+Basic->1
+Term->Factor
+Expr->Term
+StmtList->Stmt StmtList
+Stmt->LoopStmt
+LoopStmt->while Expr { StmtList }
+Factor->Basic
+Basic->cur
+Term->Factor
+Factor->Basic
+Basic->a
+Term->Factor
+Expr->Term
+Expr->Term < Expr
+StmtList->Stmt StmtList
+Stmt->BranchStmt
+BranchStmt->if Expr { StmtList } else { StmtList }
+Factor->Basic
+Basic->cur
+Term->Factor
+Factor->Basic
+Basic->a
+Term->Factor
+Factor->Basic
+Basic->2
+Term->Factor
+Expr->Term
+Expr->Term - Expr
+Expr->Term > Expr
+StmtList->Stmt StmtList
+Stmt->Assign
+Assign->Identifier = Expr
+Identifier->res
+Factor->Basic
+Basic->res
+Term->Factor
+Factor->Basic
+Basic->1
+Term->Factor
+Expr->Term
+Expr->Term + Expr
+StmtList->ε
+StmtList->Stmt StmtList
+Stmt->pass
+StmtList->ε
+StmtList->Stmt StmtList
+Stmt->Assign
+Assign->Identifier = Expr
+Identifier->res
+Factor->Basic
+Basic->res
+Term->Factor
+Factor->Basic
+Basic->cur
+Term->Factor
+Expr->Term
+Expr->Term + Expr
+StmtList->Stmt StmtList
+Stmt->Assign
+Assign->Identifier = Expr
+Identifier->cur
+Factor->Basic
+Basic->cur
+Term->Factor
+Factor->Basic
+Basic->1
+Term->Factor
+Expr->Term
+Expr->Term + Expr
+StmtList->ε
+StmtList->Stmt StmtList
+Stmt->Return
+Return->Expr
+Factor->Basic
+Basic->res
+Term->Factor
+Expr->Term
+StmtList->ε
 FnList->ε
 
 
@@ -122,24 +410,93 @@ Pg
 |        ├─ Stmt
 |        |  └─ Return
 |        |     └─ Expr
-|        |        └─ Term
-|        |           └─ Factor
-|        |              └─ FnCall
-|        |                 ├─ func
-|        |                 └─ Expr
-|        |                    ├─ Term
-|        |                    |  └─ Factor
-|        |                    |     └─ 10
-|        |                    ├─ -
-|        |                    └─ Expr
-|        |                       └─ Term
-|        |                          └─ Factor
-|        |                             └─ FnCall
-|        |                                ├─ func_
-|        |                                └─ Expr
-|        |                                   └─ Term
-|        |                                      └─ Factor
-|        |                                         └─ 1
+|        |        ├─ Term
+|        |        |  └─ Factor
+|        |        |     └─ FnCall
+|        |        |        ├─ func
+|        |        |        └─ Expr
+|        |        |           ├─ Term
+|        |        |           |  └─ Factor
+|        |        |           |     └─ 5
+|        |        |           ├─ +
+|        |        |           └─ Expr
+|        |        |              ├─ Term
+|        |        |              |  ├─ Factor
+|        |        |              |  |  └─ FnCall
+|        |        |              |  |     ├─ func_
+|        |        |              |  |     └─ Expr
+|        |        |              |  |        └─ Term
+|        |        |              |  |           └─ Factor
+|        |        |              |  |              └─ 3
+|        |        |              |  ├─ *
+|        |        |              |  └─ Term
+|        |        |              |     └─ Factor
+|        |        |              |        └─ 2
+|        |        |              ├─ -
+|        |        |              └─ Expr
+|        |        |                 ├─ Term
+|        |        |                 |  └─ Factor
+|        |        |                 |     └─ FnCall
+|        |        |                 |        ├─ func
+|        |        |                 |        └─ Expr
+|        |        |                 |           └─ Term
+|        |        |                 |              └─ Factor
+|        |        |                 |                 └─ 5
+|        |        |                 ├─ +
+|        |        |                 └─ Expr
+|        |        |                    └─ Term
+|        |        |                       └─ Factor
+|        |        |                          └─ FnCall
+|        |        |                             ├─ func_
+|        |        |                             └─ Expr
+|        |        |                                ├─ Term
+|        |        |                                |  └─ Factor
+|        |        |                                |     └─ 1
+|        |        |                                ├─ +
+|        |        |                                └─ Expr
+|        |        |                                   ├─ Term
+|        |        |                                   |  └─ Factor
+|        |        |                                   |     └─ FnCall
+|        |        |                                   |        ├─ funca
+|        |        |                                   |        └─ Expr
+|        |        |                                   |           └─ Term
+|        |        |                                   |              └─ Factor
+|        |        |                                   |                 └─ 2
+|        |        |                                   ├─ -
+|        |        |                                   └─ Expr
+|        |        |                                      ├─ Term
+|        |        |                                      |  └─ Factor
+|        |        |                                      |     └─ FnCall
+|        |        |                                      |        ├─ funca
+|        |        |                                      |        └─ Expr
+|        |        |                                      |           └─ Term
+|        |        |                                      |              └─ Factor
+|        |        |                                      |                 └─ 11
+|        |        |                                      ├─ +
+|        |        |                                      └─ Expr
+|        |        |                                         └─ Term
+|        |        |                                            └─ Factor
+|        |        |                                               └─ 3
+|        |        ├─ +
+|        |        └─ Expr
+|        |           ├─ Term
+|        |           |  └─ Factor
+|        |           |     └─ FnCall
+|        |           |        ├─ funcb
+|        |           |        └─ Expr
+|        |           |           └─ Term
+|        |           |              └─ Factor
+|        |           |                 └─ 3
+|        |           ├─ +
+|        |           └─ Expr
+|        |              └─ Term
+|        |                 └─ Factor
+|        |                    └─ FnCall
+|        |                       ├─ accumulate
+|        |                       └─ Expr
+|        |                          └─ Term
+|        |                             └─ Factor
+|        |                                └─ 10
 |        └─ StmtList
 |           └─ ε
 └─ FnList
@@ -159,53 +516,53 @@ Pg
    |        |     ├─ Expr
    |        |     |  ├─ Term
    |        |     |  |  └─ Factor
-   |        |     |  |     └─ 1
+   |        |     |  |     └─ a
    |        |     |  ├─ <
    |        |     |  └─ Expr
    |        |     |     └─ Term
    |        |     |        └─ Factor
-   |        |     |           └─ a
+   |        |     |           └─ 2
    |        |     ├─ StmtList
    |        |     |  ├─ Stmt
    |        |     |  |  └─ Return
    |        |     |  |     └─ Expr
-   |        |     |  |        ├─ Term
-   |        |     |  |        |  └─ Factor
-   |        |     |  |        |     └─ FnCall
-   |        |     |  |        |        ├─ func
-   |        |     |  |        |        └─ Expr
-   |        |     |  |        |           ├─ Term
-   |        |     |  |        |           |  └─ Factor
-   |        |     |  |        |           |     └─ a
-   |        |     |  |        |           ├─ -
-   |        |     |  |        |           └─ Expr
-   |        |     |  |        |              └─ Term
-   |        |     |  |        |                 └─ Factor
-   |        |     |  |        |                    └─ 1
-   |        |     |  |        ├─ +
-   |        |     |  |        └─ Expr
-   |        |     |  |           └─ Term
-   |        |     |  |              └─ Factor
-   |        |     |  |                 └─ FnCall
-   |        |     |  |                    ├─ func
-   |        |     |  |                    └─ Expr
-   |        |     |  |                       ├─ Term
-   |        |     |  |                       |  └─ Factor
-   |        |     |  |                       |     └─ a
-   |        |     |  |                       ├─ -
-   |        |     |  |                       └─ Expr
-   |        |     |  |                          └─ Term
-   |        |     |  |                             └─ Factor
-   |        |     |  |                                └─ 2
+   |        |     |  |        └─ Term
+   |        |     |  |           └─ Factor
+   |        |     |  |              └─ a
    |        |     |  └─ StmtList
    |        |     |     └─ ε
    |        |     └─ StmtList
    |        |        ├─ Stmt
    |        |        |  └─ Return
    |        |        |     └─ Expr
-   |        |        |        └─ Term
-   |        |        |           └─ Factor
-   |        |        |              └─ a
+   |        |        |        ├─ Term
+   |        |        |        |  └─ Factor
+   |        |        |        |     └─ FnCall
+   |        |        |        |        ├─ func
+   |        |        |        |        └─ Expr
+   |        |        |        |           ├─ Term
+   |        |        |        |           |  └─ Factor
+   |        |        |        |           |     └─ a
+   |        |        |        |           ├─ -
+   |        |        |        |           └─ Expr
+   |        |        |        |              └─ Term
+   |        |        |        |                 └─ Factor
+   |        |        |        |                    └─ 2
+   |        |        |        ├─ +
+   |        |        |        └─ Expr
+   |        |        |           └─ Term
+   |        |        |              └─ Factor
+   |        |        |                 └─ FnCall
+   |        |        |                    ├─ func
+   |        |        |                    └─ Expr
+   |        |        |                       ├─ Term
+   |        |        |                       |  └─ Factor
+   |        |        |                       |     └─ a
+   |        |        |                       ├─ -
+   |        |        |                       └─ Expr
+   |        |        |                          └─ Term
+   |        |        |                             └─ Factor
+   |        |        |                                └─ 1
    |        |        └─ StmtList
    |        |           └─ ε
    |        └─ StmtList
@@ -235,12 +592,292 @@ Pg
       |        └─ StmtList
       |           └─ ε
       └─ FnList
-         └─ ε
-["func", "op(", "10", "-", "func_", "op(", "1", "op)", "op)"]
-["1", "<", "a"]
-["func", "op(", "a", "-", "1", "op)", "+", "func", "op(", "a", "-", "2", "op)"]
+         ├─ Fn
+         |  ├─ int
+         |  ├─ funca
+         |  ├─ Param
+         |  |  └─ ParamList
+         |  |     ├─ int
+         |  |     ├─ a
+         |  |     └─ ParamListTail
+         |  |        └─ ε
+         |  └─ FnBody
+         |     └─ StmtList
+         |        ├─ Stmt
+         |        |  └─ BranchStmt
+         |        |     ├─ Expr
+         |        |     |  ├─ Term
+         |        |     |  |  └─ Factor
+         |        |     |  |     └─ a
+         |        |     |  ├─ >
+         |        |     |  └─ Expr
+         |        |     |     └─ Term
+         |        |     |        └─ Factor
+         |        |     |           └─ 10
+         |        |     ├─ StmtList
+         |        |     |  ├─ Stmt
+         |        |     |  |  └─ Return
+         |        |     |  |     └─ Expr
+         |        |     |  |        └─ Term
+         |        |     |  |           └─ Factor
+         |        |     |  |              └─ a
+         |        |     |  └─ StmtList
+         |        |     |     └─ ε
+         |        |     └─ StmtList
+         |        |        ├─ Stmt
+         |        |        |  └─ BranchStmt
+         |        |        |     ├─ Expr
+         |        |        |     |  ├─ Term
+         |        |        |     |  |  └─ Factor
+         |        |        |     |  |     └─ a
+         |        |        |     |  ├─ >
+         |        |        |     |  └─ Expr
+         |        |        |     |     └─ Term
+         |        |        |     |        └─ Factor
+         |        |        |     |           └─ 5
+         |        |        |     ├─ StmtList
+         |        |        |     |  ├─ Stmt
+         |        |        |     |  |  └─ Return
+         |        |        |     |  |     └─ Expr
+         |        |        |     |  |        └─ Term
+         |        |        |     |  |           ├─ Factor
+         |        |        |     |  |           |  └─ a
+         |        |        |     |  |           ├─ *
+         |        |        |     |  |           └─ Term
+         |        |        |     |  |              └─ Factor
+         |        |        |     |  |                 └─ a
+         |        |        |     |  └─ StmtList
+         |        |        |     |     └─ ε
+         |        |        |     └─ StmtList
+         |        |        |        ├─ Stmt
+         |        |        |        |  └─ Return
+         |        |        |        |     └─ Expr
+         |        |        |        |        └─ Term
+         |        |        |        |           ├─ Factor
+         |        |        |        |           |  └─ a
+         |        |        |        |           ├─ *
+         |        |        |        |           └─ Term
+         |        |        |        |              ├─ Factor
+         |        |        |        |              |  └─ a
+         |        |        |        |              ├─ *
+         |        |        |        |              └─ Term
+         |        |        |        |                 └─ Factor
+         |        |        |        |                    └─ a
+         |        |        |        └─ StmtList
+         |        |        |           └─ ε
+         |        |        └─ StmtList
+         |        |           └─ ε
+         |        └─ StmtList
+         |           └─ ε
+         └─ FnList
+            ├─ Fn
+            |  ├─ int
+            |  ├─ funcb
+            |  ├─ Param
+            |  |  └─ ParamList
+            |  |     ├─ int
+            |  |     ├─ a
+            |  |     └─ ParamListTail
+            |  |        └─ ε
+            |  └─ FnBody
+            |     └─ StmtList
+            |        ├─ Stmt
+            |        |  └─ VarDef
+            |        |     ├─ int
+            |        |     ├─ b
+            |        |     └─ Expr
+            |        |        └─ Term
+            |        |           └─ Factor
+            |        |              └─ 0
+            |        └─ StmtList
+            |           ├─ Stmt
+            |           |  └─ LoopStmt
+            |           |     ├─ Expr
+            |           |     |  ├─ Term
+            |           |     |  |  └─ Factor
+            |           |     |  |     └─ a
+            |           |     |  ├─ >
+            |           |     |  └─ Expr
+            |           |     |     └─ Term
+            |           |     |        └─ Factor
+            |           |     |           └─ 0
+            |           |     └─ StmtList
+            |           |        ├─ Stmt
+            |           |        |  └─ Assign
+            |           |        |     ├─ b
+            |           |        |     └─ Expr
+            |           |        |        ├─ Term
+            |           |        |        |  └─ Factor
+            |           |        |        |     └─ b
+            |           |        |        ├─ +
+            |           |        |        └─ Expr
+            |           |        |           └─ Term
+            |           |        |              └─ Factor
+            |           |        |                 └─ a
+            |           |        └─ StmtList
+            |           |           ├─ Stmt
+            |           |           |  └─ Assign
+            |           |           |     ├─ a
+            |           |           |     └─ Expr
+            |           |           |        ├─ Term
+            |           |           |        |  └─ Factor
+            |           |           |        |     └─ a
+            |           |           |        ├─ -
+            |           |           |        └─ Expr
+            |           |           |           └─ Term
+            |           |           |              └─ Factor
+            |           |           |                 └─ 1
+            |           |           └─ StmtList
+            |           |              └─ ε
+            |           └─ StmtList
+            |              ├─ Stmt
+            |              |  └─ Return
+            |              |     └─ Expr
+            |              |        └─ Term
+            |              |           └─ Factor
+            |              |              └─ b
+            |              └─ StmtList
+            |                 └─ ε
+            └─ FnList
+               ├─ Fn
+               |  ├─ int
+               |  ├─ accumulate
+               |  ├─ Param
+               |  |  └─ ParamList
+               |  |     ├─ int
+               |  |     ├─ a
+               |  |     └─ ParamListTail
+               |  |        └─ ε
+               |  └─ FnBody
+               |     └─ StmtList
+               |        ├─ Stmt
+               |        |  └─ VarDef
+               |        |     ├─ int
+               |        |     ├─ res
+               |        |     └─ Expr
+               |        |        └─ Term
+               |        |           └─ Factor
+               |        |              └─ 0
+               |        └─ StmtList
+               |           ├─ Stmt
+               |           |  └─ VarDef
+               |           |     ├─ int
+               |           |     ├─ cur
+               |           |     └─ Expr
+               |           |        └─ Term
+               |           |           └─ Factor
+               |           |              └─ 1
+               |           └─ StmtList
+               |              ├─ Stmt
+               |              |  └─ LoopStmt
+               |              |     ├─ Expr
+               |              |     |  ├─ Term
+               |              |     |  |  └─ Factor
+               |              |     |  |     └─ cur
+               |              |     |  ├─ <
+               |              |     |  └─ Expr
+               |              |     |     └─ Term
+               |              |     |        └─ Factor
+               |              |     |           └─ a
+               |              |     └─ StmtList
+               |              |        ├─ Stmt
+               |              |        |  └─ BranchStmt
+               |              |        |     ├─ Expr
+               |              |        |     |  ├─ Term
+               |              |        |     |  |  └─ Factor
+               |              |        |     |  |     └─ cur
+               |              |        |     |  ├─ >
+               |              |        |     |  └─ Expr
+               |              |        |     |     ├─ Term
+               |              |        |     |     |  └─ Factor
+               |              |        |     |     |     └─ a
+               |              |        |     |     ├─ -
+               |              |        |     |     └─ Expr
+               |              |        |     |        └─ Term
+               |              |        |     |           └─ Factor
+               |              |        |     |              └─ 2
+               |              |        |     ├─ StmtList
+               |              |        |     |  ├─ Stmt
+               |              |        |     |  |  └─ Assign
+               |              |        |     |  |     ├─ res
+               |              |        |     |  |     └─ Expr
+               |              |        |     |  |        ├─ Term
+               |              |        |     |  |        |  └─ Factor
+               |              |        |     |  |        |     └─ res
+               |              |        |     |  |        ├─ +
+               |              |        |     |  |        └─ Expr
+               |              |        |     |  |           └─ Term
+               |              |        |     |  |              └─ Factor
+               |              |        |     |  |                 └─ 1
+               |              |        |     |  └─ StmtList
+               |              |        |     |     └─ ε
+               |              |        |     └─ StmtList
+               |              |        |        ├─ Stmt
+               |              |        |        |  └─ pass
+               |              |        |        └─ StmtList
+               |              |        |           └─ ε
+               |              |        └─ StmtList
+               |              |           ├─ Stmt
+               |              |           |  └─ Assign
+               |              |           |     ├─ res
+               |              |           |     └─ Expr
+               |              |           |        ├─ Term
+               |              |           |        |  └─ Factor
+               |              |           |        |     └─ res
+               |              |           |        ├─ +
+               |              |           |        └─ Expr
+               |              |           |           └─ Term
+               |              |           |              └─ Factor
+               |              |           |                 └─ cur
+               |              |           └─ StmtList
+               |              |              ├─ Stmt
+               |              |              |  └─ Assign
+               |              |              |     ├─ cur
+               |              |              |     └─ Expr
+               |              |              |        ├─ Term
+               |              |              |        |  └─ Factor
+               |              |              |        |     └─ cur
+               |              |              |        ├─ +
+               |              |              |        └─ Expr
+               |              |              |           └─ Term
+               |              |              |              └─ Factor
+               |              |              |                 └─ 1
+               |              |              └─ StmtList
+               |              |                 └─ ε
+               |              └─ StmtList
+               |                 ├─ Stmt
+               |                 |  └─ Return
+               |                 |     └─ Expr
+               |                 |        └─ Term
+               |                 |           └─ Factor
+               |                 |              └─ res
+               |                 └─ StmtList
+               |                    └─ ε
+               └─ FnList
+                  └─ ε
+["func", "op(", "5", "+", "func_", "op(", "3", "op)", "*", "2", "-", "func", "op(", "5", "op)", "+", "func_", "op(", "1", "+", "funca", "op(", "2", "op)", "-", "funca", "op(", "11", "op)", "+", "3", "op)", "op)", "+", "funcb", "op(", "3", "op)", "+", "accumulate", "op(", "10", "op)"]
+["a", "<", "2"]
 ["a"]
+["func", "op(", "a", "-", "2", "op)", "+", "func", "op(", "a", "-", "1", "op)"]
 ["a", "*", "a"]
+["a", ">", "10"]
+["a"]
+["a", ">", "5"]
+["a", "*", "a"]
+["a", "*", "a", "*", "a"]
+["0"]
+["a", ">", "0"]
+["b", "+", "a"]
+["a", "-", "1"]
+["b"]
+["0"]
+["1"]
+["cur", "<", "a"]
+["cur", ">", "a", "-", "2"]
+["res", "+", "1"]
+["res", "+", "cur"]
+["cur", "+", "1"]
+["res"]
 Assembly code written to file: /home/wm/0WM/W/w/../tmp/return_2.s
 Command (GCC compilation of assembly code) executed successfully!
 stdout: 
