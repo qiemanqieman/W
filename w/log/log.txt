@@ -1,0 +1,247 @@
+Current directory: /home/wm/0WM/W/w
+pg->Fn FnList
+Fn->Type Identifier Param FnBody FnList
+Type->int
+Identifier->main
+Param->(ParamList)
+ParamList->ε
+FnBody->{StmtList}
+StmtList->Stmt StmtList
+Stmt->Return
+Return->Expr
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->10
+Term->Factor
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->1
+Term->Factor
+Expr->Term
+Term->Factor
+Expr->Term
+Expr->Term - Expr
+Term->Factor
+Expr->Term
+StmtList->ε
+FnList->Fn FnList
+Fn->Type Identifier Param FnBody FnList
+Type->int
+Identifier->func
+Param->(ParamList)
+ParamList->Type Identifier ParamListTail
+Type->int
+Identifier->a
+ParamListTail->ε
+FnBody->{StmtList}
+StmtList->Stmt StmtList
+Stmt->BranchStmt
+BranchStmt->if Expr { StmtList } else { StmtList }
+Factor->Basic
+Basic->1
+Term->Factor
+Factor->Basic
+Basic->a
+Term->Factor
+Expr->Term
+Expr->Term < Expr
+StmtList->Stmt StmtList
+Stmt->Return
+Return->Expr
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->a
+Term->Factor
+Factor->Basic
+Basic->1
+Term->Factor
+Expr->Term
+Expr->Term - Expr
+Term->Factor
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->a
+Term->Factor
+Factor->Basic
+Basic->2
+Term->Factor
+Expr->Term
+Expr->Term - Expr
+Term->Factor
+Expr->Term
+Expr->Term + Expr
+StmtList->ε
+StmtList->Stmt StmtList
+Stmt->Return
+Return->Expr
+Factor->Basic
+Basic->a
+Term->Factor
+Expr->Term
+StmtList->ε
+StmtList->ε
+FnList->Fn FnList
+Fn->Type Identifier Param FnBody FnList
+Type->int
+Identifier->func_
+Param->(ParamList)
+ParamList->Type Identifier ParamListTail
+Type->int
+Identifier->a
+ParamListTail->ε
+FnBody->{StmtList}
+StmtList->Stmt StmtList
+Stmt->Return
+Return->Expr
+Factor->Basic
+Basic->a
+Factor->Basic
+Basic->a
+Term->Factor
+Term->Factor * Term
+Expr->Term
+StmtList->ε
+FnList->ε
+
+
+
+
+Pg
+├─ Fn
+|  ├─ int
+|  ├─ main
+|  ├─ Param
+|  |  └─ ParamList
+|  |     └─ ε
+|  └─ FnBody
+|     └─ StmtList
+|        ├─ Stmt
+|        |  └─ Return
+|        |     └─ Expr
+|        |        └─ Term
+|        |           └─ Factor
+|        |              └─ FnCall
+|        |                 ├─ func
+|        |                 └─ Expr
+|        |                    ├─ Term
+|        |                    |  └─ Factor
+|        |                    |     └─ 10
+|        |                    ├─ -
+|        |                    └─ Expr
+|        |                       └─ Term
+|        |                          └─ Factor
+|        |                             └─ FnCall
+|        |                                ├─ func_
+|        |                                └─ Expr
+|        |                                   └─ Term
+|        |                                      └─ Factor
+|        |                                         └─ 1
+|        └─ StmtList
+|           └─ ε
+└─ FnList
+   ├─ Fn
+   |  ├─ int
+   |  ├─ func
+   |  ├─ Param
+   |  |  └─ ParamList
+   |  |     ├─ int
+   |  |     ├─ a
+   |  |     └─ ParamListTail
+   |  |        └─ ε
+   |  └─ FnBody
+   |     └─ StmtList
+   |        ├─ Stmt
+   |        |  └─ BranchStmt
+   |        |     ├─ Expr
+   |        |     |  ├─ Term
+   |        |     |  |  └─ Factor
+   |        |     |  |     └─ 1
+   |        |     |  ├─ <
+   |        |     |  └─ Expr
+   |        |     |     └─ Term
+   |        |     |        └─ Factor
+   |        |     |           └─ a
+   |        |     ├─ StmtList
+   |        |     |  ├─ Stmt
+   |        |     |  |  └─ Return
+   |        |     |  |     └─ Expr
+   |        |     |  |        ├─ Term
+   |        |     |  |        |  └─ Factor
+   |        |     |  |        |     └─ FnCall
+   |        |     |  |        |        ├─ func
+   |        |     |  |        |        └─ Expr
+   |        |     |  |        |           ├─ Term
+   |        |     |  |        |           |  └─ Factor
+   |        |     |  |        |           |     └─ a
+   |        |     |  |        |           ├─ -
+   |        |     |  |        |           └─ Expr
+   |        |     |  |        |              └─ Term
+   |        |     |  |        |                 └─ Factor
+   |        |     |  |        |                    └─ 1
+   |        |     |  |        ├─ +
+   |        |     |  |        └─ Expr
+   |        |     |  |           └─ Term
+   |        |     |  |              └─ Factor
+   |        |     |  |                 └─ FnCall
+   |        |     |  |                    ├─ func
+   |        |     |  |                    └─ Expr
+   |        |     |  |                       ├─ Term
+   |        |     |  |                       |  └─ Factor
+   |        |     |  |                       |     └─ a
+   |        |     |  |                       ├─ -
+   |        |     |  |                       └─ Expr
+   |        |     |  |                          └─ Term
+   |        |     |  |                             └─ Factor
+   |        |     |  |                                └─ 2
+   |        |     |  └─ StmtList
+   |        |     |     └─ ε
+   |        |     └─ StmtList
+   |        |        ├─ Stmt
+   |        |        |  └─ Return
+   |        |        |     └─ Expr
+   |        |        |        └─ Term
+   |        |        |           └─ Factor
+   |        |        |              └─ a
+   |        |        └─ StmtList
+   |        |           └─ ε
+   |        └─ StmtList
+   |           └─ ε
+   └─ FnList
+      ├─ Fn
+      |  ├─ int
+      |  ├─ func_
+      |  ├─ Param
+      |  |  └─ ParamList
+      |  |     ├─ int
+      |  |     ├─ a
+      |  |     └─ ParamListTail
+      |  |        └─ ε
+      |  └─ FnBody
+      |     └─ StmtList
+      |        ├─ Stmt
+      |        |  └─ Return
+      |        |     └─ Expr
+      |        |        └─ Term
+      |        |           ├─ Factor
+      |        |           |  └─ a
+      |        |           ├─ *
+      |        |           └─ Term
+      |        |              └─ Factor
+      |        |                 └─ a
+      |        └─ StmtList
+      |           └─ ε
+      └─ FnList
+         └─ ε
+["func", "op(", "10", "-", "func_", "op(", "1", "op)", "op)"]
+["1", "<", "a"]
+["func", "op(", "a", "-", "1", "op)", "+", "func", "op(", "a", "-", "2", "op)"]
+["a"]
+["a", "*", "a"]
+Assembly code written to file: /home/wm/0WM/W/w/../tmp/return_2.s
+Command (GCC compilation of assembly code) executed successfully!
+stdout: 
+stderr: 

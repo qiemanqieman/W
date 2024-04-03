@@ -2,17 +2,14 @@
  * @Author: qiemanqieman 1324137924@qq.com
  * @Date: 2024-03-29 21:38:43
  * @LastEditors: qiemanqieman 1324137924@qq.com
- * @LastEditTime: 2024-04-02 23:06:47
+ * @LastEditTime: 2024-04-03 22:46:54
  * @FilePath: /W/w/src/interpreter.rs
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 
 use crate::ast::AST;
 use crate::aux::*;
-use std::{
-  collections::{HashMap, VecDeque},
-  mem::swap,
-};
+use std::collections::{HashMap, VecDeque};
 
 pub struct Interpreter {
   used_registers: Vec<String>,
@@ -34,6 +31,12 @@ impl Interpreter {
         "*".to_string(),
         "/".to_string(),
         "^".to_string(),
+        ">".to_string(),
+        "<".to_string(),
+        ">=".to_string(),
+        "<=".to_string(),
+        "==".to_string(),
+        "!=".to_string(),
         "(".to_string(),
         ")".to_string(),
         "op(".to_string(),
@@ -63,6 +66,7 @@ impl Interpreter {
 
   fn op_priority(&self, op: &str) -> i8 {
     match op {
+      ">" => 9,
       "+" | "-" => 11,
       "*" | "/" => 12,
       "^" => 13,
@@ -82,6 +86,9 @@ impl Interpreter {
       "-" => "subq",
       "*" => "imulq",
       "/" => "idivq",
+      "^" => "xorq",
+      ">" => "greater_than",
+      "<" => "less_than",
       _ => "",
     }
   }
@@ -126,7 +133,7 @@ impl Interpreter {
       "VarDef" => self.generate_asm_var_def(ast, asm),
       "Assign" => self.generate_asm_var_assign(ast, asm),
       "Return" => self.generate_asm_ret(ast, asm),
-      // "FnCall" => self.generate_asm_fn_call(ast, asm),
+      "BranchStmt" => self.generate_asm_branch_stmt(ast, asm),
       "Expr" => self.generate_asm_expr(ast, asm),
       "ε" => return,
       _ => return,
@@ -150,7 +157,7 @@ impl Interpreter {
   }
 
   fn generate_asm_fn(&mut self, ast: &mut AST, asm: &mut String) {
-    asm.push_str(&format!("{}:\n", ast.children[1].value));
+    asm.push_str(&format!("\n\n{}:\n", ast.children[1].value));
     if ast.children[1].value == "main" {
       asm.push_str(
         "# 分配栈空间 1 页 4096 字节
@@ -163,7 +170,7 @@ impl Interpreter {
   movq $9, %rax
   syscall
   movq %rax, %rbp
-  \n\n",
+  \n",
       );
     }
     self
@@ -266,10 +273,16 @@ impl Interpreter {
       .get(var_name)
       .unwrap();
     self.generate_asm_helper(&mut ast.children[1], asm);
-    asm.push_str(&format!(
-      "  movq {}, {}(%rbp)\n",
-      ast.children[1].register, var_offset
-    ));
+    if !ast.children[1].register.starts_with("%") {
+      let reg = self.available_registers();
+      asm.push_str(&format!("  movq {}, {}\n", ast.children[1].register, reg));
+      asm.push_str(&format!("  movq {}, {}(%rbp)\n", reg, var_offset));
+    } else {
+      asm.push_str(&format!(
+        "  movq {}, {}(%rbp)\n",
+        ast.children[1].register, var_offset
+      ));
+    }
     self
       .used_registers
       .retain(|x| x != &ast.children[1].register);
@@ -279,6 +292,21 @@ impl Interpreter {
     self.generate_asm_helper(&mut ast.children[0], asm);
     asm.push_str(&format!("  movq {}, %rax\n", ast.children[0].register));
     asm.push_str("	ret\n");
+  }
+
+  fn generate_asm_branch_stmt(&mut self, ast: &mut AST, asm: &mut String) {
+    self.generate_asm_helper(&mut ast.children[0], asm);
+    let reg = ast.children[0].register.clone();
+    let equal_label = "equal_label".to_string();
+    let next_label = "next_label".to_string();
+    asm.push_str(&format!("  cmpq $0, {}\n", reg));
+    self.used_registers.retain(|x| x != &reg);
+    asm.push_str(&format!("  je {}\n", equal_label));
+    self.generate_asm_helper(&mut ast.children[1], asm);
+    asm.push_str(&format!("  jmp {}\n", next_label));
+    asm.push_str(&format!("{}:\n", equal_label));
+    self.generate_asm_helper(&mut ast.children[2], asm);
+    asm.push_str(&format!("{}:\n", next_label));
   }
 
   fn generate_asm_fn_call(&mut self, callee: String, params: &Vec<String>, asm: &mut String) {
@@ -303,7 +331,14 @@ impl Interpreter {
       }
       param_offset += 8;
     }
+    let used_regs = self.used_registers.clone();
+    for reg in used_regs.clone() {
+      asm.push_str(&format!("  pushq {}\n", reg));
+    }
     asm.push_str(&format!("  call {}\n", callee));
+    for reg in used_regs.iter().rev() {
+      asm.push_str(&format!("  popq {}\n", reg));
+    }
     asm.push_str(&format!("  subq ${}, %rbp\n", inc));
     self.call_stack.pop();
   }
@@ -410,27 +445,35 @@ impl Interpreter {
     registers: &mut VecDeque<String>,
   ) {
     let operator = operators.pop_back().unwrap();
-    let mut reg2 = registers.pop_back().unwrap();
-    let mut reg1 = registers.pop_back().unwrap();
+    let reg2 = registers.pop_back().unwrap();
+    let reg1 = registers.pop_back().unwrap();
+    let reg = self.available_registers();
     let op_code = self.get_op_code(&operator, vec![reg1.clone(), reg2.clone()]);
     if op_code == "idivq" {
+      asm.push_str(&format!("  movq {}, {}\n", reg2, reg));
       asm.push_str(&format!(
         "  movq {0}, %rax\n  xor %rdx, %rdx\n	cqto\n  idivq {1}\n  movq %rax, {1}\n",
-        reg1, reg2
+        reg1, reg
       ));
+    } else if op_code == "greater_than" {
+      asm.push_str(&format!("  movq {}, {}\n", reg2, reg));
+      asm.push_str(&format!("  cmpq {}, {}\n", reg, reg1));
+      asm.push_str(&format!("  setg %al\n"));
+      asm.push_str(&format!("  movzbq %al, {}\n", reg));
+    } else if op_code == "less_than" {
+      asm.push_str(&format!("  movq {}, {}\n", reg2, reg));
+      asm.push_str(&format!("  cmpq {}, {}\n", reg, reg1));
+      asm.push_str(&format!("  setl %al\n"));
+      asm.push_str(&format!("  movzbq %al, {}\n", reg));
+    } else if op_code == "subq" {
+      asm.push_str(&format!("  movq {}, {}\n", reg1, reg));
+      asm.push_str(&format!("  subq {}, {}\n", reg2, reg));
     } else {
-      if op_code == "subq" {
-        swap(&mut reg1, &mut reg2);
-      }
-      if reg1.starts_with("%") || reg2.starts_with("%") {
-        asm.push_str(&format!("	{} {}, {}\n", op_code, reg1, reg2));
-      } else {
-        let reg = self.available_registers();
-        asm.push_str(&format!("	movq {}, {}\n", reg1, reg));
-        asm.push_str(&format!("	{} {}, {}\n", op_code, reg, reg2));
-      }
+      asm.push_str(&format!("  movq {}, {}\n", reg2, reg));
+      asm.push_str(&format!("  {} {}, {}\n", op_code, reg1, reg));
     }
-    self.used_registers.retain(|x| x != &reg1);
-    registers.push_back(reg2.clone());
+    self.used_registers.retain(|x| x != &reg1 && x != &reg2);
+    registers.push_back(reg.clone());
+    self.used_registers.push(reg);
   }
 }

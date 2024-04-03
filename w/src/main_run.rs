@@ -2,7 +2,7 @@
  * @Author: qiemanqieman 1324137924@qq.com
  * @Date: 2024-03-28 21:23:34
  * @LastEditors: qiemanqieman 1324137924@qq.com
- * @LastEditTime: 2024-03-30 19:32:47
+ * @LastEditTime: 2024-04-03 23:08:59
  * @FilePath: /W/w/src/aux.rs
  * @Description:
  *
@@ -75,7 +75,7 @@ pub fn ast2exe(mut ast: AST, output_filename: String) {
   if args.len() == 1 {
     cmd.current_dir("/home/wm/0WM/W/tmp");
   }
-  cmd.arg(filename).arg("-o").arg(output_file);
+  cmd.arg(filename).arg("-O0 -g").arg("-o").arg(output_file);
   let output = cmd.output().expect("Failed to execute command");
   if output.status.success() {
     let stdout = String::from_utf8_lossy(&output.stdout);

@@ -1,21 +1,27 @@
 use crate::ast::AST;
-use crate::aux::*;
 use crate::lexer::Lexer;
 use core::panic;
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
 use std::vec;
 pub struct Parser<'a> {
   lexer: Lexer<'a>,
   current_tokens: VecDeque<String>,
+  keywords: HashSet<String>,
 }
 
 impl<'a> Parser<'a> {
   pub fn new(mut lexer: Lexer<'a>) -> Self {
     let mut current_tokens = VecDeque::new();
     current_tokens.push_back(lexer.next_token());
+    let mut keywords = HashSet::new();
+    keywords.insert("if".to_string());
+    keywords.insert("else".to_string());
+    keywords.insert("return".to_string());
+    keywords.insert("pass".to_string());
     Parser {
       lexer,
       current_tokens: current_tokens,
+      keywords,
     }
   }
 
@@ -197,7 +203,26 @@ impl<'a> Parser<'a> {
     }
   }
 
+  fn parse_branch_stmt(&mut self) -> AST {
+    println!("BranchStmt->if Expr {{ StmtList }} else {{ StmtList }}");
+    self.consume_token(); // if token
+    let ex = self.parse_expr();
+    self.consume_token(); // { token
+    let sl1 = self.parse_stmt_list();
+    self.consume_token(); // } token
+    self.consume_token(); // else token
+    self.consume_token(); // { token
+    let sl2 = self.parse_stmt_list();
+    self.consume_token(); // } token
+    return AST::new("BranchStmt".to_string(), vec![ex, sl1, sl2]);
+  }
+
   fn parse_stmt(&mut self) -> AST {
+    if self.current_tokens[0] == "if" {
+      println!("Stmt->BranchStmt");
+      let bs = self.parse_branch_stmt();
+      return AST::new("Stmt".to_string(), vec![bs]);
+    }
     if self.current_tokens[0] == "return" {
       println!("Stmt->Return");
       let rtn = self.parse_return();
@@ -221,16 +246,14 @@ impl<'a> Parser<'a> {
         "Stmt".to_string(),
         vec![AST::new("pass".to_string(), vec![])],
       );
-    } else if is_identifier(self.current_tokens[0].as_str())
-      && self.current_tokens[1] == "(".to_string()
-    {
-      println!("Stmt->FnCall");
-      let c = self.parse_fn_call();
-      return AST::new("Stmt".to_string(), vec![c]);
-    } else {
+    } else if self.keywords.contains(self.current_tokens[0].as_str()) {
       println!("Stmt->VarDecl");
       let vd = self.parse_var_decl();
       return AST::new("Stmt".to_string(), vec![vd]);
+    } else {
+      println!("Stmt->Expr");
+      let e = self.parse_expr();
+      return AST::new("Stmt".to_string(), vec![e]);
     }
   }
 
@@ -300,7 +323,15 @@ impl<'a> Parser<'a> {
   fn parse_expr(&mut self) -> AST {
     let left = self.parse_term();
     let op = self.current_tokens[0].clone();
-    if op == "+" || op == "-" {
+    if op == "+"
+      || op == "-"
+      || op == "=="
+      || op == "!="
+      || op == "<"
+      || op == ">"
+      || op == "<="
+      || op == ">="
+    {
       self.consume_token();
       let right = self.parse_expr();
       println!("Expr->Term {} Expr", op);
