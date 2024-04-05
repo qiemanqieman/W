@@ -1,13 +1,3 @@
-/*
- * @Author: qiemanqieman 1324137924@qq.com
- * @Date: 2024-03-28 21:23:34
- * @LastEditors: qiemanqieman 1324137924@qq.com
- * @LastEditTime: 2024-04-03 23:08:59
- * @FilePath: /W/w/src/aux.rs
- * @Description:
- *
- * Copyright (c) 2024 by ${git_name_email}, All Rights Reserved.
- */
 use crate::ast::AST;
 use crate::interpreter::Interpreter;
 use crate::lexer::Lexer;
@@ -59,23 +49,30 @@ pub fn src2ast(input: String) -> AST {
   ast
 }
 
-pub fn ast2exe(mut ast: AST, output_filename: String) {
+pub fn ast2exe(mut ast: AST, asm_filename: String) {
   // 解析抽象语法树，生成汇编代码
   let mut interpreter = Interpreter::new();
   let asm = interpreter.generate_asm(&mut ast);
 
-  fs::write(output_filename.clone(), asm).expect("Failed to write to file");
-  println!("Assembly code written to file: {}", output_filename);
+  fs::write(&asm_filename, asm).expect("Failed to write to file");
+  println!("Assembly code written to file: {}", asm_filename);
 
   // gcc汇编，生成可执行文件
-  let filename = output_filename;
-  let output_file = filename.clone().replace(".s", "");
+  let exe_file = asm_filename.clone().replace(".s", "");
   let mut cmd = Command::new("gcc");
+
   let args: Vec<String> = env::args().collect();
   if args.len() == 1 {
     cmd.current_dir("/home/wm/0WM/W/tmp");
   }
-  cmd.arg(filename).arg("-O0 -g").arg("-o").arg(output_file);
+  cmd
+    .arg("/home/wm/0WM/W/w/asm/print.o") // build in function
+    .arg("/home/wm/0WM/W/w/asm/scan.o") // build in function
+    .arg(asm_filename)
+    .arg("-O0")
+    .arg("-g")
+    .arg("-o")
+    .arg(exe_file);
   let output = cmd.output().expect("Failed to execute command");
   if output.status.success() {
     let stdout = String::from_utf8_lossy(&output.stdout);

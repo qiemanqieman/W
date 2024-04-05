@@ -1,7 +1,5 @@
 /w/target
 /tmp
-# !/tmp/return_2.w
 /external/*
 /w/build
 /w/log
-# !/w/log/log.txt

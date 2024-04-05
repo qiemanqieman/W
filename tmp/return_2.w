@@ -1,13 +1,18 @@
 
 
 int main()
-  return func(5+func_(3)*2-func(5)+func_(1+ funca(2) - funca(11)+3))  + funcb(3) + accumulate(10)
+  int b = scan()
+  int a = fibonacci(5+func_(3)*2-fibonacci(5)+func_(1+ funca(2) - funca(11)+3))  + funcb(3) + accumulate(10) +  add(157,100)
+  print(a)
+  print(100+fibonacci(5))
+  print(b+100+scan())
+  return 0
 
-int func(int a)
+int fibonacci(int a)
   if a < 2
     return a
   else 
-    return func(a-2) + func(a-1)
+    return fibonacci(a-2) + fibonacci(a-1)
   
 int func_(int a)
   return a * a
@@ -39,3 +44,6 @@ int accumulate(int a)
     res = res + cur
     cur = cur + 1
   return res
+  
+int add(int a, int b)
+  return a + b

@@ -7,8 +7,19 @@ Param->(ParamList)
 ParamList->ε
 FnBody->{StmtList}
 StmtList->Stmt StmtList
-Stmt->Return
-Return->Expr
+Stmt->VarDef
+VarDef->Type Identifier = Expr
+Type->int
+Identifier->b
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Term->Factor
+Expr->Term
+StmtList->Stmt StmtList
+Stmt->VarDef
+VarDef->Type Identifier = Expr
+Type->int
+Identifier->a
 Factor->FnCall
 FnCall->Identifier(ExprList)
 Factor->Basic
@@ -77,14 +88,79 @@ Basic->10
 Term->Factor
 Expr->Term
 Term->Factor
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->157
+Term->Factor
+Expr->Term
+Factor->Basic
+Basic->100
+Term->Factor
+Expr->Term
+Term->Factor
 Expr->Term
 Expr->Term + Expr
 Expr->Term + Expr
+Expr->Term + Expr
+StmtList->Stmt StmtList
+Stmt->Expr
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->a
+Term->Factor
+Expr->Term
+Term->Factor
+Expr->Term
+StmtList->Stmt StmtList
+Stmt->Expr
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->100
+Term->Factor
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->5
+Term->Factor
+Expr->Term
+Term->Factor
+Expr->Term
+Expr->Term + Expr
+Term->Factor
+Expr->Term
+StmtList->Stmt StmtList
+Stmt->Expr
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Factor->Basic
+Basic->b
+Term->Factor
+Factor->Basic
+Basic->100
+Term->Factor
+Factor->FnCall
+FnCall->Identifier(ExprList)
+Term->Factor
+Expr->Term
+Expr->Term + Expr
+Expr->Term + Expr
+Term->Factor
+Expr->Term
+StmtList->Stmt StmtList
+Stmt->Return
+Return->Expr
+Factor->Basic
+Basic->0
+Term->Factor
+Expr->Term
 StmtList->ε
 FnList->Fn FnList
 Fn->Type Identifier Param FnBody FnList
 Type->int
-Identifier->func
+Identifier->fibonacci
 Param->(ParamList)
 ParamList->Type Identifier ParamListTail
 Type->int
@@ -393,6 +469,31 @@ Basic->res
 Term->Factor
 Expr->Term
 StmtList->ε
+FnList->Fn FnList
+Fn->Type Identifier Param FnBody FnList
+Type->int
+Identifier->add
+Param->(ParamList)
+ParamList->Type Identifier ParamListTail
+Type->int
+Identifier->a
+ParamListTail->, Type Identifier ParamListTail
+Type->int
+Identifier->b
+ParamListTail->ε
+FnBody->{StmtList}
+StmtList->Stmt StmtList
+Stmt->Return
+Return->Expr
+Factor->Basic
+Basic->a
+Term->Factor
+Factor->Basic
+Basic->b
+Term->Factor
+Expr->Term
+Expr->Term + Expr
+StmtList->ε
 FnList->ε
 
 
@@ -408,101 +509,188 @@ Pg
 |  └─ FnBody
 |     └─ StmtList
 |        ├─ Stmt
-|        |  └─ Return
+|        |  └─ VarDef
+|        |     ├─ int
+|        |     ├─ b
 |        |     └─ Expr
-|        |        ├─ Term
-|        |        |  └─ Factor
-|        |        |     └─ FnCall
-|        |        |        ├─ func
-|        |        |        └─ Expr
-|        |        |           ├─ Term
-|        |        |           |  └─ Factor
-|        |        |           |     └─ 5
-|        |        |           ├─ +
-|        |        |           └─ Expr
-|        |        |              ├─ Term
-|        |        |              |  ├─ Factor
-|        |        |              |  |  └─ FnCall
-|        |        |              |  |     ├─ func_
-|        |        |              |  |     └─ Expr
-|        |        |              |  |        └─ Term
-|        |        |              |  |           └─ Factor
-|        |        |              |  |              └─ 3
-|        |        |              |  ├─ *
-|        |        |              |  └─ Term
-|        |        |              |     └─ Factor
-|        |        |              |        └─ 2
-|        |        |              ├─ -
-|        |        |              └─ Expr
-|        |        |                 ├─ Term
-|        |        |                 |  └─ Factor
-|        |        |                 |     └─ FnCall
-|        |        |                 |        ├─ func
-|        |        |                 |        └─ Expr
-|        |        |                 |           └─ Term
-|        |        |                 |              └─ Factor
-|        |        |                 |                 └─ 5
-|        |        |                 ├─ +
-|        |        |                 └─ Expr
-|        |        |                    └─ Term
-|        |        |                       └─ Factor
-|        |        |                          └─ FnCall
-|        |        |                             ├─ func_
-|        |        |                             └─ Expr
-|        |        |                                ├─ Term
-|        |        |                                |  └─ Factor
-|        |        |                                |     └─ 1
-|        |        |                                ├─ +
-|        |        |                                └─ Expr
-|        |        |                                   ├─ Term
-|        |        |                                   |  └─ Factor
-|        |        |                                   |     └─ FnCall
-|        |        |                                   |        ├─ funca
-|        |        |                                   |        └─ Expr
-|        |        |                                   |           └─ Term
-|        |        |                                   |              └─ Factor
-|        |        |                                   |                 └─ 2
-|        |        |                                   ├─ -
-|        |        |                                   └─ Expr
-|        |        |                                      ├─ Term
-|        |        |                                      |  └─ Factor
-|        |        |                                      |     └─ FnCall
-|        |        |                                      |        ├─ funca
-|        |        |                                      |        └─ Expr
-|        |        |                                      |           └─ Term
-|        |        |                                      |              └─ Factor
-|        |        |                                      |                 └─ 11
-|        |        |                                      ├─ +
-|        |        |                                      └─ Expr
-|        |        |                                         └─ Term
-|        |        |                                            └─ Factor
-|        |        |                                               └─ 3
-|        |        ├─ +
-|        |        └─ Expr
-|        |           ├─ Term
-|        |           |  └─ Factor
-|        |           |     └─ FnCall
-|        |           |        ├─ funcb
-|        |           |        └─ Expr
-|        |           |           └─ Term
-|        |           |              └─ Factor
-|        |           |                 └─ 3
-|        |           ├─ +
-|        |           └─ Expr
-|        |              └─ Term
-|        |                 └─ Factor
-|        |                    └─ FnCall
-|        |                       ├─ accumulate
-|        |                       └─ Expr
-|        |                          └─ Term
-|        |                             └─ Factor
-|        |                                └─ 10
+|        |        └─ Term
+|        |           └─ Factor
+|        |              └─ FnCall
+|        |                 └─ scan
 |        └─ StmtList
-|           └─ ε
+|           ├─ Stmt
+|           |  └─ VarDef
+|           |     ├─ int
+|           |     ├─ a
+|           |     └─ Expr
+|           |        ├─ Term
+|           |        |  └─ Factor
+|           |        |     └─ FnCall
+|           |        |        ├─ fibonacci
+|           |        |        └─ Expr
+|           |        |           ├─ Term
+|           |        |           |  └─ Factor
+|           |        |           |     └─ 5
+|           |        |           ├─ +
+|           |        |           └─ Expr
+|           |        |              ├─ Term
+|           |        |              |  ├─ Factor
+|           |        |              |  |  └─ FnCall
+|           |        |              |  |     ├─ func_
+|           |        |              |  |     └─ Expr
+|           |        |              |  |        └─ Term
+|           |        |              |  |           └─ Factor
+|           |        |              |  |              └─ 3
+|           |        |              |  ├─ *
+|           |        |              |  └─ Term
+|           |        |              |     └─ Factor
+|           |        |              |        └─ 2
+|           |        |              ├─ -
+|           |        |              └─ Expr
+|           |        |                 ├─ Term
+|           |        |                 |  └─ Factor
+|           |        |                 |     └─ FnCall
+|           |        |                 |        ├─ fibonacci
+|           |        |                 |        └─ Expr
+|           |        |                 |           └─ Term
+|           |        |                 |              └─ Factor
+|           |        |                 |                 └─ 5
+|           |        |                 ├─ +
+|           |        |                 └─ Expr
+|           |        |                    └─ Term
+|           |        |                       └─ Factor
+|           |        |                          └─ FnCall
+|           |        |                             ├─ func_
+|           |        |                             └─ Expr
+|           |        |                                ├─ Term
+|           |        |                                |  └─ Factor
+|           |        |                                |     └─ 1
+|           |        |                                ├─ +
+|           |        |                                └─ Expr
+|           |        |                                   ├─ Term
+|           |        |                                   |  └─ Factor
+|           |        |                                   |     └─ FnCall
+|           |        |                                   |        ├─ funca
+|           |        |                                   |        └─ Expr
+|           |        |                                   |           └─ Term
+|           |        |                                   |              └─ Factor
+|           |        |                                   |                 └─ 2
+|           |        |                                   ├─ -
+|           |        |                                   └─ Expr
+|           |        |                                      ├─ Term
+|           |        |                                      |  └─ Factor
+|           |        |                                      |     └─ FnCall
+|           |        |                                      |        ├─ funca
+|           |        |                                      |        └─ Expr
+|           |        |                                      |           └─ Term
+|           |        |                                      |              └─ Factor
+|           |        |                                      |                 └─ 11
+|           |        |                                      ├─ +
+|           |        |                                      └─ Expr
+|           |        |                                         └─ Term
+|           |        |                                            └─ Factor
+|           |        |                                               └─ 3
+|           |        ├─ +
+|           |        └─ Expr
+|           |           ├─ Term
+|           |           |  └─ Factor
+|           |           |     └─ FnCall
+|           |           |        ├─ funcb
+|           |           |        └─ Expr
+|           |           |           └─ Term
+|           |           |              └─ Factor
+|           |           |                 └─ 3
+|           |           ├─ +
+|           |           └─ Expr
+|           |              ├─ Term
+|           |              |  └─ Factor
+|           |              |     └─ FnCall
+|           |              |        ├─ accumulate
+|           |              |        └─ Expr
+|           |              |           └─ Term
+|           |              |              └─ Factor
+|           |              |                 └─ 10
+|           |              ├─ +
+|           |              └─ Expr
+|           |                 └─ Term
+|           |                    └─ Factor
+|           |                       └─ FnCall
+|           |                          ├─ add
+|           |                          ├─ Expr
+|           |                          |  └─ Term
+|           |                          |     └─ Factor
+|           |                          |        └─ 157
+|           |                          └─ Expr
+|           |                             └─ Term
+|           |                                └─ Factor
+|           |                                   └─ 100
+|           └─ StmtList
+|              ├─ Stmt
+|              |  └─ Expr
+|              |     └─ Term
+|              |        └─ Factor
+|              |           └─ FnCall
+|              |              ├─ print
+|              |              └─ Expr
+|              |                 └─ Term
+|              |                    └─ Factor
+|              |                       └─ a
+|              └─ StmtList
+|                 ├─ Stmt
+|                 |  └─ Expr
+|                 |     └─ Term
+|                 |        └─ Factor
+|                 |           └─ FnCall
+|                 |              ├─ print
+|                 |              └─ Expr
+|                 |                 ├─ Term
+|                 |                 |  └─ Factor
+|                 |                 |     └─ 100
+|                 |                 ├─ +
+|                 |                 └─ Expr
+|                 |                    └─ Term
+|                 |                       └─ Factor
+|                 |                          └─ FnCall
+|                 |                             ├─ fibonacci
+|                 |                             └─ Expr
+|                 |                                └─ Term
+|                 |                                   └─ Factor
+|                 |                                      └─ 5
+|                 └─ StmtList
+|                    ├─ Stmt
+|                    |  └─ Expr
+|                    |     └─ Term
+|                    |        └─ Factor
+|                    |           └─ FnCall
+|                    |              ├─ print
+|                    |              └─ Expr
+|                    |                 ├─ Term
+|                    |                 |  └─ Factor
+|                    |                 |     └─ b
+|                    |                 ├─ +
+|                    |                 └─ Expr
+|                    |                    ├─ Term
+|                    |                    |  └─ Factor
+|                    |                    |     └─ 100
+|                    |                    ├─ +
+|                    |                    └─ Expr
+|                    |                       └─ Term
+|                    |                          └─ Factor
+|                    |                             └─ FnCall
+|                    |                                └─ scan
+|                    └─ StmtList
+|                       ├─ Stmt
+|                       |  └─ Return
+|                       |     └─ Expr
+|                       |        └─ Term
+|                       |           └─ Factor
+|                       |              └─ 0
+|                       └─ StmtList
+|                          └─ ε
 └─ FnList
    ├─ Fn
    |  ├─ int
-   |  ├─ func
+   |  ├─ fibonacci
    |  ├─ Param
    |  |  └─ ParamList
    |  |     ├─ int
@@ -538,7 +726,7 @@ Pg
    |        |        |        ├─ Term
    |        |        |        |  └─ Factor
    |        |        |        |     └─ FnCall
-   |        |        |        |        ├─ func
+   |        |        |        |        ├─ fibonacci
    |        |        |        |        └─ Expr
    |        |        |        |           ├─ Term
    |        |        |        |           |  └─ Factor
@@ -553,7 +741,7 @@ Pg
    |        |        |           └─ Term
    |        |        |              └─ Factor
    |        |        |                 └─ FnCall
-   |        |        |                    ├─ func
+   |        |        |                    ├─ fibonacci
    |        |        |                    └─ Expr
    |        |        |                       ├─ Term
    |        |        |                       |  └─ Factor
@@ -854,11 +1042,44 @@ Pg
                |                 └─ StmtList
                |                    └─ ε
                └─ FnList
-                  └─ ε
-["func", "op(", "5", "+", "func_", "op(", "3", "op)", "*", "2", "-", "func", "op(", "5", "op)", "+", "func_", "op(", "1", "+", "funca", "op(", "2", "op)", "-", "funca", "op(", "11", "op)", "+", "3", "op)", "op)", "+", "funcb", "op(", "3", "op)", "+", "accumulate", "op(", "10", "op)"]
+                  ├─ Fn
+                  |  ├─ int
+                  |  ├─ add
+                  |  ├─ Param
+                  |  |  └─ ParamList
+                  |  |     ├─ int
+                  |  |     ├─ a
+                  |  |     └─ ParamListTail
+                  |  |        ├─ int
+                  |  |        ├─ b
+                  |  |        └─ ParamListTail
+                  |  |           └─ ε
+                  |  └─ FnBody
+                  |     └─ StmtList
+                  |        ├─ Stmt
+                  |        |  └─ Return
+                  |        |     └─ Expr
+                  |        |        ├─ Term
+                  |        |        |  └─ Factor
+                  |        |        |     └─ a
+                  |        |        ├─ +
+                  |        |        └─ Expr
+                  |        |           └─ Term
+                  |        |              └─ Factor
+                  |        |                 └─ b
+                  |        └─ StmtList
+                  |           └─ ε
+                  └─ FnList
+                     └─ ε
+["scan", "op(", "op)"]
+["fibonacci", "op(", "5", "+", "func_", "op(", "3", "op)", "*", "2", "-", "fibonacci", "op(", "5", "op)", "+", "func_", "op(", "1", "+", "funca", "op(", "2", "op)", "-", "funca", "op(", "11", "op)", "+", "3", "op)", "op)", "+", "funcb", "op(", "3", "op)", "+", "accumulate", "op(", "10", "op)", "+", "add", "op(", "157", "100", "op)"]
+["print", "op(", "a", "op)"]
+["print", "op(", "100", "+", "fibonacci", "op(", "5", "op)", "op)"]
+["print", "op(", "b", "+", "100", "+", "scan", "op(", "op)", "op)"]
+["0"]
 ["a", "<", "2"]
 ["a"]
-["func", "op(", "a", "-", "2", "op)", "+", "func", "op(", "a", "-", "1", "op)"]
+["fibonacci", "op(", "a", "-", "2", "op)", "+", "fibonacci", "op(", "a", "-", "1", "op)"]
 ["a", "*", "a"]
 ["a", ">", "10"]
 ["a"]
@@ -878,6 +1099,7 @@ Pg
 ["res", "+", "cur"]
 ["cur", "+", "1"]
 ["res"]
+["a", "+", "b"]
 Assembly code written to file: /home/wm/0WM/W/w/../tmp/return_2.s
 Command (GCC compilation of assembly code) executed successfully!
 stdout: 

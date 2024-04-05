@@ -158,7 +158,7 @@ impl<'a> Parser<'a> {
       plt = self.parse_param_list_tail();
     } else {
       panic!(
-        "parse_param_list_tail error, expected , but got {}",
+        "parse_param_list_tail error, expected `,` but got `{}`",
         self.current_tokens[0]
       );
     }
